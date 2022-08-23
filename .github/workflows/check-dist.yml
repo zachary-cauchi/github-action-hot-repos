@@ -21,7 +21,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Set Node.js 16.x
         uses: actions/setup-node@v2.5.1
@@ -41,13 +44,29 @@ jobs:
           if [ "$(git diff --ignore-space-at-eol dist/ ':!*.map' | wc -l)" -gt "0" ]; then
             echo "Detected uncommitted changes after build.  See status below:"
             git diff
-            exit 1
+            echo "::set-output name=commit_dist::true"
+
+            exit 0
           fi
+
+          echo "::set-output name=upload_artifact::true"
         id: diff
 
-      # If index.js was different than expected, upload the expected version as an artifact
+      # If index.js was updated, we want to commit the updated one automatically.
+      - name: Commit updated dist
+        if: ${{ steps.diff.outputs.commit_dist == 'true' }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add dist
+          git commit -am "feat: update dist"
+          git push
+
+          # We don't want to upload artifacts if we just committed. We want the artifact to be uploaded with a new run.
+          echo "::set-output name=upload_artifact::false"
+
       - uses: actions/upload-artifact@v3
-        if: ${{ failure() && steps.diff.conclusion == 'failure' }}
+        if: ${{ steps.diff.outputs.upload_artifact == 'true' }}
         with:
           name: dist
           path: dist/
