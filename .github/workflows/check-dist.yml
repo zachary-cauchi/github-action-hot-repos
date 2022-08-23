@@ -39,14 +39,11 @@ jobs:
           npm run build
           npm run package
 
-      - name: Compare the expected and actual dist/ directories
+      - name: Compare the expected and actual dist/ directories for new changes
         run: |
           if [ "$(git diff --ignore-space-at-eol dist/ ':!*.map' | wc -l)" -gt "0" ]; then
             echo "Detected uncommitted changes after build.  See status below:"
             git diff
-            echo "::set-output name=commit_dist::true"
-
-            exit 0
           fi
         id: diff
 
@@ -57,18 +54,6 @@ jobs:
           add: dist
           default_author: github_actions
           message: 'feat: update dist package'
-      
-      # - name: Commit updated dist
-      #   if: ${{ steps.diff.outputs.commit_dist == 'true' }}
-      #   run: |
-      #     git config user.name github-actions
-      #     git config user.email github-actions@github.com
-      #     git add dist
-      #     git commit -am "feat: update dist"
-      #     git push
-
-      #     # We don't want to upload artifacts if we just committed. We want the artifact to be uploaded with a new run.
-      #     echo "::set-output name=upload_artifact::true"
 
       - uses: actions/upload-artifact@v3
         if: ${{ steps.commit.outputs.committed == 'true' }}
