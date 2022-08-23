@@ -51,7 +51,7 @@ jobs:
 
       # If index.js was updated, we want to commit the updated one automatically.
       - name: Commit updated dist
-        if: ${{ steps.diff.output.commit_dist == 'true' }}
+        if: ${{ steps.diff.outputs.commit_dist == 'true' }}
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -64,7 +64,7 @@ jobs:
 
       # If index.js was different than expected, upload the new version as an artifact
       - uses: actions/upload-artifact@v2
-        if: ${{ steps.diff.output.upload_artifact == 'true' }}
+        if: ${{ steps.diff.outputs.upload_artifact == 'true' }}
         with:
           name: dist
           path: dist/
