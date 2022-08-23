@@ -48,8 +48,6 @@ jobs:
 
             exit 0
           fi
-
-          echo "::set-output name=upload_artifact::true"
         id: diff
 
       # If index.js was updated, we want to commit the updated one automatically.
@@ -63,7 +61,7 @@ jobs:
           git push
 
           # We don't want to upload artifacts if we just committed. We want the artifact to be uploaded with a new run.
-          echo "::set-output name=upload_artifact::false"
+          echo "::set-output name=upload_artifact::true"
 
       - uses: actions/upload-artifact@v3
         if: ${{ steps.diff.outputs.upload_artifact == 'true' }}
