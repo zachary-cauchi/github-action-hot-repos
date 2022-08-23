@@ -22,6 +22,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Set Node.js 16.x
         uses: actions/setup-node@v2.5.1
@@ -57,8 +60,9 @@ jobs:
           git config user.email github-actions@github.com
           git add dist
           git commit -am "feat: update dist"
-          echo Pushing changes to ${GITHUB_HEAD_REF##*/}
-          git push origin HEAD:${GITHUB_HEAD_REF##*/}
+          git push
+          # echo Pushing changes to ${GITHUB_HEAD_REF##*/}
+          # git push origin HEAD:${GITHUB_HEAD_REF##*/}
 
           # We don't want to upload artifacts if we just committed. We want the artifact to be uploaded with a new run.
           echo "::set-output name=upload_artifact::false"
