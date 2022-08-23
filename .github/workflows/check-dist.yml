@@ -52,6 +52,7 @@ jobs:
 
       # If index.js was updated, we want to commit the updated one automatically.
       - uses: EndBug/add-and-commit@v9
+        id: commit
         with:
           add: dist
           default_author: github_actions
@@ -70,7 +71,7 @@ jobs:
       #     echo "::set-output name=upload_artifact::true"
 
       - uses: actions/upload-artifact@v3
-        if: ${{ steps.diff.outputs.upload_artifact == 'true' }}
+        if: ${{ steps.commit.outputs.committed == 'true' }}
         with:
           name: dist
           path: dist/
