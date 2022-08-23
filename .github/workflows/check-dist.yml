@@ -68,7 +68,7 @@ jobs:
           echo "::set-output name=upload_artifact::false"
 
       # If index.js was different than expected, upload the new version as an artifact
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ steps.diff.outputs.upload_artifact == 'true' }}
         with:
           name: dist
