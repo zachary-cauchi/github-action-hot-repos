@@ -1,6 +1,7 @@
 name: 'build-test'
 on: # rebuild any PRs and main branch changes
-  pull_request:
+  # pull_request will not work because of the permissions needed
+  pull_request_target:
   push:
     branches:
       - main
