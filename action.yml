@@ -5,7 +5,6 @@ inputs:
   token:
     required: true
     description: 'Your github personal access token. Usually, just need to set it to \'${{ secrets.GITHUB_TOKEN }}\''
-    default:
 runs:
   using: 'node16'
   main: 'dist/index.js'
