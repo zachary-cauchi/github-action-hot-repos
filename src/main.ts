@@ -18,10 +18,16 @@ async function run(): Promise<void> {
 
       core.info(`Got ${commits.length} commits.`)
     } catch (e) {
-      if (e instanceof Error) core.setFailed(e)
+      if (e instanceof Error) {
+        core.error('Something went wrong getting the commits.')
+        core.setFailed(e)
+      }
     }
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error)
+    if (error instanceof Error) {
+      core.error('Something went wrong during the action process.')
+      core.setFailed(error)
+    }
   }
 }
 
