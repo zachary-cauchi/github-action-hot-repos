@@ -5,10 +5,8 @@ import {RestEndpointMethodTypes} from '@octokit/plugin-rest-endpoint-methods/dis
 import {GitHub} from '@actions/github/lib/utils'
 
 export type GitHubClient = InstanceType<typeof GitHub>
-export type Repo = Pick<
-  RestEndpointMethodTypes['repos']['listForUser']['response'],
-  'data'
->['data'][0]
+export type Repo =
+  RestEndpointMethodTypes['repos']['listForUser']['response']['data'][0]
 
 export function getClient(token: string): GitHubClient {
   core.debug('Getting client')

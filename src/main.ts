@@ -3,7 +3,7 @@ import {getClient, getUserPublicRepos} from './utils'
 
 async function run(): Promise<void> {
   try {
-    const token = core.getInput('GITHUB_TOKEN', {required: true})
+    const token = core.getInput('token', { required: true })
     const client = getClient(token)
     const repos = await getUserPublicRepos(client)
 
