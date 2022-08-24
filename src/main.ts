@@ -83,7 +83,7 @@ async function run(): Promise<void> {
 
         const msg = latestCommit.commit.message.slice(
           0,
-          latestCommit.commit.message.indexOf('\n')
+          latestCommit.commit.message.indexOf('\n') + 1
         )
         const date = latestCommit.commit.committer?.date
 
