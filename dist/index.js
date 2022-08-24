@@ -99,7 +99,8 @@ function run() {
                 const topRepos = [...sortedMap].slice(0, 5).map(entry => {
                     var _a;
                     const latestCommit = entry[1][1][0];
-                    const msg = latestCommit.commit.message.slice(0, latestCommit.commit.message.indexOf('\n') + 1);
+                    const newLine = latestCommit.commit.message.indexOf('\n');
+                    const msg = latestCommit.commit.message.slice(0, newLine > 0 ? newLine : undefined);
                     const date = (_a = latestCommit.commit.committer) === null || _a === void 0 ? void 0 : _a.date;
                     return {
                         repo: entry[0],

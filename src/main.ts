@@ -81,9 +81,10 @@ async function run(): Promise<void> {
       const topRepos = [...sortedMap].slice(0, 5).map(entry => {
         const latestCommit = entry[1][1][0]
 
+        const newLine = latestCommit.commit.message.indexOf('\n')
         const msg = latestCommit.commit.message.slice(
           0,
-          latestCommit.commit.message.indexOf('\n') + 1
+          newLine > 0 ? newLine : undefined
         )
         const date = latestCommit.commit.committer?.date
 
