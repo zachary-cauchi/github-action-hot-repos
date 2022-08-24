@@ -11,6 +11,8 @@ async function run(): Promise<void> {
   try {
     const token = core.getInput('token', {required: true})
 
+    core.info(token)
+
     const client = getClient(token)
     const repos = await getUserPublicRepos(client)
     const mappedCommits: Map<string, [Repo, Commit[]]> = new Map()

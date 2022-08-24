@@ -9,6 +9,8 @@ on: # rebuild any PRs and main branch changes
   
   workflow_dispatch:
 
+permissions: read-all # This is necessary for appropriate permissions to be granted.
+
 jobs:
   build: # make sure build/ci work properly
     runs-on: ubuntu-latest
@@ -20,7 +22,6 @@ jobs:
           npm run all
   test: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
-    permissions: read-all # This is necessary for appropriate permissions to be granted.
     steps:
       - uses: actions/checkout@v2
       
