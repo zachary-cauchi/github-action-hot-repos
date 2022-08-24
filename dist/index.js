@@ -64,7 +64,7 @@ function run() {
                             if (date1 === date2)
                                 return 0;
                             // Sort in descending order. If ascending, we swap the signs.
-                            else if (date1 > date2)
+                            else if (date1 < date2)
                                 return 1;
                         }
                         return -1;
@@ -86,7 +86,7 @@ function run() {
                         : new Date(0);
                     if (date1 === date2)
                         return 0;
-                    else if (date1 > date2)
+                    else if (date1 < date2)
                         return 1;
                     return -1;
                 })
