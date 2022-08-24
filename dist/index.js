@@ -46,7 +46,6 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token', { required: true });
-            core.info(token);
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
             const mappedCommits = new Map();
@@ -193,9 +192,11 @@ exports.getClient = getClient;
 function getUserPublicRepos(client) {
     return __awaiter(this, void 0, void 0, function* () {
         core.debug('Getting user');
-        const user = (yield client.rest.users.getAuthenticated()).data;
-        core.debug(`Got user ${user.login}`);
-        const repos = (yield client.rest.repos.listForUser({ username: user.login }))
+        const username = github_1.context.repo.owner;
+        core.info(`Getting repos for user ${username}`);
+        // const user = (await client.rest.users.getAuthenticated()).data
+        // core.debug(`Got user ${user.login}`)
+        const repos = (yield client.rest.repos.listForUser({ username }))
             .data;
         core.debug(`Got ${repos.length} repos`);
         return repos;

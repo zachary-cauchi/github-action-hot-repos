@@ -1,7 +1,5 @@
 name: 'build-test'
 on: # rebuild any PRs and main branch changes
-  # pull_request will not work because of the permissions needed
-  pull_request_target:
   push:
     branches:
       - main
@@ -11,7 +9,6 @@ on: # rebuild any PRs and main branch changes
   workflow_dispatch:
 
 permissions: read-all # This is necessary for appropriate permissions to be granted.
-
 
 jobs:
   build: # make sure build/ci work properly
