@@ -40,7 +40,7 @@ async function run(): Promise<void> {
           return -1
         })
 
-        core.debug(
+        core.info(
           `Sorted commits for repo ${repo.full_name}. Latest commit date: ${commits[0].commit.committer?.date}`
         )
 

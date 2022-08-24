@@ -69,7 +69,7 @@ function run() {
                         }
                         return -1;
                     });
-                    core.debug(`Sorted commits for repo ${repo.full_name}. Latest commit date: ${(_a = commits[0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
+                    core.info(`Sorted commits for repo ${repo.full_name}. Latest commit date: ${(_a = commits[0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
                     mappedCommits.set(repo.name, [repo, commits]);
                     core.debug(JSON.stringify(mappedCommits, null, 2));
                 }
