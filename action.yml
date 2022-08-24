@@ -4,7 +4,7 @@ author: 'Zachary Cauchi'
 inputs:
   token:
     required: true
-    description: 'Your github personal access token. Usually, just need to set it to \'${{ secrets.GITHUB_TOKEN }}\''
+    description: 'Your github personal access token. Usually, just need to set it to your GITHUB_TOKEN in the workflow'
 runs:
   using: 'node16'
   main: 'dist/index.js'
