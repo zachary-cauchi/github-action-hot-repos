@@ -10,8 +10,7 @@ on: # rebuild any PRs and main branch changes
   
   workflow_dispatch:
 
-permissions: # This is necessary for appropriate permissions to be granted.
-  contents: read
+permissions: read-all # This is necessary for appropriate permissions to be granted.
 
 
 jobs:
