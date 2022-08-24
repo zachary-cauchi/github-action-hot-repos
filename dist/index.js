@@ -47,12 +47,13 @@ function run() {
             const token = core.getInput('token', { required: true });
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
+            const mappedCommits = new Map();
             try {
-                const commits = (yield client.rest.repos.listCommits({
-                    owner: repos[0].owner.login,
-                    repo: repos[0].name
-                })).data;
-                core.info(`Got ${commits.length} commits.`);
+                for (const repo of repos) {
+                    const commits = yield (0, utils_1.getCommitsForRepo)(client, repo);
+                    mappedCommits.set(repo.name, [repo, commits]);
+                    core.debug(JSON.stringify(mappedCommits, null, 2));
+                }
             }
             catch (e) {
                 if (e instanceof Error) {
@@ -124,7 +125,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getUserPublicRepos = exports.getClient = void 0;
+exports.getCommitsForRepo = exports.getUserPublicRepos = exports.getClient = void 0;
 /*eslint import/no-unresolved: [2, { ignore: ['^@octokit'] }]*/
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
@@ -145,6 +146,18 @@ function getUserPublicRepos(client) {
     });
 }
 exports.getUserPublicRepos = getUserPublicRepos;
+function getCommitsForRepo(client, repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info(`Getting commits for repo ${repo.name}`);
+        const commits = (yield client.rest.repos.listCommits({
+            owner: repo.owner.login,
+            repo: repo.name
+        })).data;
+        core.debug(`Got ${commits.length} commits`);
+        return commits;
+    });
+}
+exports.getCommitsForRepo = getCommitsForRepo;
 
 
 /***/ }),

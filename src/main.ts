@@ -1,5 +1,11 @@
 import * as core from '@actions/core'
-import {getClient, getUserPublicRepos} from './utils'
+import {
+  Commit,
+  getClient,
+  getCommitsForRepo,
+  getUserPublicRepos,
+  Repo
+} from './utils'
 
 async function run(): Promise<void> {
   try {
@@ -7,16 +13,16 @@ async function run(): Promise<void> {
 
     const client = getClient(token)
     const repos = await getUserPublicRepos(client)
+    const mappedCommits: Map<string, [Repo, Commit[]]> = new Map()
 
     try {
-      const commits = (
-        await client.rest.repos.listCommits({
-          owner: repos[0].owner.login,
-          repo: repos[0].name
-        })
-      ).data
+      for (const repo of repos) {
+        const commits: Commit[] = await getCommitsForRepo(client, repo)
 
-      core.info(`Got ${commits.length} commits.`)
+        mappedCommits.set(repo.name, [repo, commits])
+
+        core.debug(JSON.stringify(mappedCommits, null, 2))
+      }
     } catch (e) {
       if (e instanceof Error) {
         core.error('Something went wrong getting the commits.')

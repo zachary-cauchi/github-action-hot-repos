@@ -8,6 +8,9 @@ export type GitHubClient = InstanceType<typeof GitHub>
 export type Repo =
   RestEndpointMethodTypes['repos']['listForUser']['response']['data'][0]
 
+export type Commit =
+  RestEndpointMethodTypes['repos']['listCommits']['response']['data'][0]
+
 export function getClient(token: string): GitHubClient {
   core.debug('Getting client')
   return getOctokit(token)
@@ -26,4 +29,22 @@ export async function getUserPublicRepos(
   core.debug(`Got ${repos.length} repos`)
 
   return repos
+}
+
+export async function getCommitsForRepo(
+  client: GitHubClient,
+  repo: Repo
+): Promise<Commit[]> {
+  core.info(`Getting commits for repo ${repo.name}`)
+
+  const commits = (
+    await client.rest.repos.listCommits({
+      owner: repo.owner.login,
+      repo: repo.name
+    })
+  ).data
+
+  core.debug(`Got ${commits.length} commits`)
+
+  return commits
 }
