@@ -47,16 +47,25 @@ function run() {
             const token = core.getInput('token', { required: true });
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
-            core.info(repos.toString());
-            const commits = (yield client.rest.repos.listCommits({
-                owner: repos[0].owner.login,
-                repo: repos[0].full_name
-            })).data;
-            core.info(commits.toString());
+            try {
+                const commits = (yield client.rest.repos.listCommits({
+                    owner: repos[0].owner.login,
+                    repo: repos[0].name
+                })).data;
+                core.info(`Got ${commits.length} commits.`);
+            }
+            catch (e) {
+                if (e instanceof Error) {
+                    core.error('Something went wrong getting the commits.');
+                    core.setFailed(e);
+                }
+            }
         }
         catch (error) {
-            if (error instanceof Error)
-                core.setFailed(error.message);
+            if (error instanceof Error) {
+                core.error('Something went wrong during the action process.');
+                core.setFailed(error);
+            }
         }
     });
 }
