@@ -1,11 +1,11 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Get Hot Repos'
+description: 'Get the repos you most recently committed to.'
+author: 'Zachary Cauchi'
 inputs:
-  milliseconds: # change this
+  token:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Your github personal access token. Usually, just need to set it to \'${{ secrets.GITHUB_TOKEN }}\''
+    default:
 runs:
   using: 'node16'
   main: 'dist/index.js'
