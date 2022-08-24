@@ -4,24 +4,26 @@ import {getClient, getUserPublicRepos} from './utils'
 async function run(): Promise<void> {
   try {
     const token = core.getInput('token', {required: true})
-    
-    core.info(`Got token ${token}.`)
 
     const client = getClient(token)
     const repos = await getUserPublicRepos(client)
 
-    core.info(repos.toString())
+    core.info(`Got ${repos.length} repos. First repo is ${repos[0].full_name}.`)
 
-    const commits = (
-      await client.rest.repos.listCommits({
-        owner: repos[0].owner.login,
-        repo: repos[0].full_name
-      })
-    ).data
+    try {
+      const commits = (
+        await client.rest.repos.listCommits({
+          owner: repos[0].owner.login,
+          repo: repos[0].full_name
+        })
+      ).data
 
-    core.info(commits.toString())
+      core.info(`Got ${commits.length} commits.`)
+    } catch (e) {
+      if (e instanceof Error) core.setFailed(e)
+    }
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) core.setFailed(error)
   }
 }
 
