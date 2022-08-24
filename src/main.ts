@@ -94,7 +94,7 @@ async function run(): Promise<void> {
         }
       })
 
-      core.setOutput('topRepos', topRepos)
+      core.setOutput('topRepos', JSON.stringify(topRepos, null, 2))
     } catch (e) {
       if (e instanceof Error) {
         core.error('Something went wrong getting the commits.')
