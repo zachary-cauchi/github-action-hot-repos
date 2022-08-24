@@ -3,7 +3,10 @@ import {getClient, getUserPublicRepos} from './utils'
 
 async function run(): Promise<void> {
   try {
-    const token = core.getInput('token', { required: true })
+    const token = core.getInput('token', {required: true})
+    
+    core.info(`Got token ${token}.`)
+
     const client = getClient(token)
     const repos = await getUserPublicRepos(client)
 
