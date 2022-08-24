@@ -42,6 +42,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const utils_1 = __nccwpck_require__(918);
 function run() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token', { required: true });
@@ -53,20 +54,22 @@ function run() {
                     let commits = yield (0, utils_1.getCommitsForRepo)(client, repo);
                     commits = commits.sort((c1, c2) => {
                         var _a, _b, _c, _d, _e;
-                        if (((_a = c1.commit.committer) === null || _a === void 0 ? void 0 : _a.date) && ((_b = c2.commit.committer) === null || _b === void 0 ? void 0 : _b.date)) {
-                            const date1 = new Date((_c = c1.commit.committer) === null || _c === void 0 ? void 0 : _c.date);
-                            const date2 = new Date((_d = c2.commit.committer) === null || _d === void 0 ? void 0 : _d.date);
+                        if (!((_a = c1.commit.committer) === null || _a === void 0 ? void 0 : _a.date)) {
+                            core.debug(`Commit ${c1.sha} for repo ${repo.full_name} does not have a committed date. Cannot sort`);
+                            return -1;
+                        }
+                        if (((_b = c1.commit.committer) === null || _b === void 0 ? void 0 : _b.date) && ((_c = c2.commit.committer) === null || _c === void 0 ? void 0 : _c.date)) {
+                            const date1 = new Date((_d = c1.commit.committer) === null || _d === void 0 ? void 0 : _d.date);
+                            const date2 = new Date((_e = c2.commit.committer) === null || _e === void 0 ? void 0 : _e.date);
                             if (date1 === date2)
                                 return 0;
                             // Sort in descending order. If ascending, we swap the signs.
                             else if (date1 > date2)
                                 return 1;
-                            else if (date1 < date2)
-                                return -1;
                         }
-                        core.debug(`Sorted commits for repo ${repo.full_name}. Latest commit date: ${(_e = commits[0].commit.committer) === null || _e === void 0 ? void 0 : _e.date}`);
-                        throw new Error(`One or more commits for repo ${repo.full_name} does not have a committed date. Cannot sort`);
+                        return -1;
                     });
+                    core.debug(`Sorted commits for repo ${repo.full_name}. Latest commit date: ${(_a = commits[0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
                     mappedCommits.set(repo.name, [repo, commits]);
                     core.debug(JSON.stringify(mappedCommits, null, 2));
                 }

@@ -20,6 +20,14 @@ async function run(): Promise<void> {
         let commits: Commit[] = await getCommitsForRepo(client, repo)
 
         commits = commits.sort((c1, c2) => {
+          if (!c1.commit.committer?.date) {
+            core.debug(
+              `Commit ${c1.sha} for repo ${repo.full_name} does not have a committed date. Cannot sort`
+            )
+
+            return -1
+          }
+
           if (c1.commit.committer?.date && c2.commit.committer?.date) {
             const date1 = new Date(c1.commit.committer?.date)
             const date2 = new Date(c2.commit.committer?.date)
@@ -27,17 +35,14 @@ async function run(): Promise<void> {
             if (date1 === date2) return 0
             // Sort in descending order. If ascending, we swap the signs.
             else if (date1 > date2) return 1
-            else if (date1 < date2) return -1
           }
 
-          core.debug(
-            `Sorted commits for repo ${repo.full_name}. Latest commit date: ${commits[0].commit.committer?.date}`
-          )
-
-          throw new Error(
-            `One or more commits for repo ${repo.full_name} does not have a committed date. Cannot sort`
-          )
+          return -1
         })
+
+        core.debug(
+          `Sorted commits for repo ${repo.full_name}. Latest commit date: ${commits[0].commit.committer?.date}`
+        )
 
         mappedCommits.set(repo.name, [repo, commits])
 
