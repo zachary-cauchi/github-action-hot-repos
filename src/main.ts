@@ -8,13 +8,11 @@ async function run(): Promise<void> {
     const client = getClient(token)
     const repos = await getUserPublicRepos(client)
 
-    core.info(`Got ${repos.length} repos. First repo is ${repos[0].full_name}.`)
-
     try {
       const commits = (
         await client.rest.repos.listCommits({
           owner: repos[0].owner.login,
-          repo: repos[0].full_name
+          repo: repos[0].name
         })
       ).data
 
