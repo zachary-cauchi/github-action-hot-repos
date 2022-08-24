@@ -44,7 +44,7 @@ const utils_1 = __nccwpck_require__(918);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = core.getInput('GITHUB_TOKEN', { required: true });
+            const token = core.getInput('token', { required: true });
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
             core.info(repos.toString());
