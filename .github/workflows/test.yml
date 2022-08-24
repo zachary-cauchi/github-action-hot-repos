@@ -25,6 +25,11 @@ jobs:
       - uses: actions/checkout@v2
       
       - uses: ./
+        id: test
         with:
           token: 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
           # token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Check output of actions
+        run: |
+          echo ${{ steps.test.outputs.topRepos }}
