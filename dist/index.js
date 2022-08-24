@@ -73,6 +73,41 @@ function run() {
                     mappedCommits.set(repo.name, [repo, commits]);
                     core.debug(JSON.stringify(mappedCommits, null, 2));
                 }
+                const sortedMap = new Map([...mappedCommits]
+                    .sort((list1, list2) => {
+                    var _a, _b, _c, _d;
+                    const commit1 = list1[1][1][0];
+                    const commit2 = list2[1][1][0];
+                    const date1 = ((_a = commit1.commit.committer) === null || _a === void 0 ? void 0 : _a.date)
+                        ? new Date((_b = commit1.commit.committer) === null || _b === void 0 ? void 0 : _b.date)
+                        : new Date(0);
+                    const date2 = ((_c = commit2.commit.committer) === null || _c === void 0 ? void 0 : _c.date)
+                        ? new Date((_d = commit2.commit.committer) === null || _d === void 0 ? void 0 : _d.date)
+                        : new Date(0);
+                    if (date1 === date2)
+                        return 0;
+                    else if (date1 > date2)
+                        return 1;
+                    return -1;
+                })
+                    .map(entry => {
+                    var _a;
+                    core.info(`Sorted commits for repo ${entry[1][0].full_name}. Latest commit date: ${(_a = entry[1][1][0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
+                    return entry;
+                }));
+                core.info(`Sorted all repos`);
+                const topRepos = [...sortedMap].slice(0, 5).map(entry => {
+                    var _a;
+                    const latestCommit = entry[1][1][0];
+                    const msg = latestCommit.commit.message.slice(0, latestCommit.commit.message.indexOf('\n'));
+                    const date = (_a = latestCommit.commit.committer) === null || _a === void 0 ? void 0 : _a.date;
+                    return {
+                        repo: entry[0],
+                        commitMsg: msg,
+                        date
+                    };
+                });
+                core.setOutput('topRepos', topRepos);
             }
             catch (e) {
                 if (e instanceof Error) {
