@@ -1,6 +1,10 @@
 name: 'Get Hot Repos'
 description: 'Get the repos you most recently committed to.'
 author: 'Zachary Cauchi'
+branding:
+  icon: trending-up
+  color: green
+
 inputs:
   token:
     required: true
