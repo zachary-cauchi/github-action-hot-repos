@@ -40,6 +40,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const types_1 = __nccwpck_require__(8164);
 const utils_1 = __nccwpck_require__(918);
 function run() {
     var _a;
@@ -52,62 +53,13 @@ function run() {
             try {
                 for (const repo of repos) {
                     let commits = yield (0, utils_1.getCommitsForRepo)(client, repo);
-                    commits = commits.sort((c1, c2) => {
-                        var _a, _b, _c, _d, _e;
-                        if (!((_a = c1.commit.committer) === null || _a === void 0 ? void 0 : _a.date)) {
-                            core.debug(`Commit ${c1.sha} for repo ${repo.full_name} does not have a committed date. Cannot sort`);
-                            return -1;
-                        }
-                        if (((_b = c1.commit.committer) === null || _b === void 0 ? void 0 : _b.date) && ((_c = c2.commit.committer) === null || _c === void 0 ? void 0 : _c.date)) {
-                            const date1 = new Date((_d = c1.commit.committer) === null || _d === void 0 ? void 0 : _d.date);
-                            const date2 = new Date((_e = c2.commit.committer) === null || _e === void 0 ? void 0 : _e.date);
-                            if (date1 === date2)
-                                return 0;
-                            // Sort in descending order. If ascending, we swap the signs.
-                            else if (date1 < date2)
-                                return 1;
-                        }
-                        return -1;
-                    });
+                    commits = (0, utils_1.sortCommitsByCommitDate)(commits, types_1.SortingOrder.Descending);
                     core.info(`Sorted commits for repo ${repo.full_name}. Latest commit date: ${(_a = commits[0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
                     mappedCommits.set(repo.name, [repo, commits]);
-                    core.debug(JSON.stringify(mappedCommits, null, 2));
                 }
-                const sortedMap = new Map([...mappedCommits]
-                    .sort((list1, list2) => {
-                    var _a, _b, _c, _d;
-                    const commit1 = list1[1][1][0];
-                    const commit2 = list2[1][1][0];
-                    const date1 = ((_a = commit1.commit.committer) === null || _a === void 0 ? void 0 : _a.date)
-                        ? new Date((_b = commit1.commit.committer) === null || _b === void 0 ? void 0 : _b.date)
-                        : new Date(0);
-                    const date2 = ((_c = commit2.commit.committer) === null || _c === void 0 ? void 0 : _c.date)
-                        ? new Date((_d = commit2.commit.committer) === null || _d === void 0 ? void 0 : _d.date)
-                        : new Date(0);
-                    if (date1 === date2)
-                        return 0;
-                    else if (date1 < date2)
-                        return 1;
-                    return -1;
-                })
-                    .map(entry => {
-                    var _a;
-                    core.info(`Sorted commits for repo ${entry[1][0].full_name}. Latest commit date: ${(_a = entry[1][1][0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
-                    return entry;
-                }));
+                const sortedMap = (0, utils_1.sortRepoMapByCommitDate)(mappedCommits, types_1.SortingOrder.Descending);
                 core.info(`Sorted all repos`);
-                const topRepos = [...sortedMap].slice(0, 5).map(entry => {
-                    var _a;
-                    const latestCommit = entry[1][1][0];
-                    const newLine = latestCommit.commit.message.indexOf('\n');
-                    const msg = latestCommit.commit.message.slice(0, newLine > 0 ? newLine : undefined);
-                    const date = (_a = latestCommit.commit.committer) === null || _a === void 0 ? void 0 : _a.date;
-                    return {
-                        repo: entry[0],
-                        commitMsg: msg,
-                        date
-                    };
-                });
+                const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap);
                 core.setOutput('topRepos', JSON.stringify(topRepos, null, 2));
             }
             catch (e) {
@@ -125,19 +77,17 @@ function run() {
         }
     });
 }
-// async function run(): Promise<void> {
-//   try {
-//     const ms: string = core.getInput('milliseconds')
-//     core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-//     core.debug(new Date().toTimeString())
-//     await wait(parseInt(ms, 10))
-//     core.debug(new Date().toTimeString())
-//     core.setOutput('time', new Date().toTimeString())
-//   } catch (error) {
-//     if (error instanceof Error) core.setFailed(error.message)
-//   }
-// }
 run();
+
+
+/***/ }),
+
+/***/ 8164:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ }),
@@ -180,10 +130,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getCommitsForRepo = exports.getUserPublicRepos = exports.getClient = void 0;
-/*eslint import/no-unresolved: [2, { ignore: ['^@octokit'] }]*/
+exports.repoMapToRepoStatsMap = exports.sortRepoMapByCommitDate = exports.sortCommitsByCommitDate = exports.getCommitsForRepo = exports.getUserPublicRepos = exports.getClient = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
+const types_1 = __nccwpck_require__(8164);
 function getClient(token) {
     core.debug('Getting client');
     return (0, github_1.getOctokit)(token);
@@ -196,8 +146,7 @@ function getUserPublicRepos(client) {
         core.info(`Getting repos for user ${username}`);
         // const user = (await client.rest.users.getAuthenticated()).data
         // core.debug(`Got user ${user.login}`)
-        const repos = (yield client.rest.repos.listForUser({ username }))
-            .data;
+        const repos = (yield client.rest.repos.listForUser({ username })).data;
         core.debug(`Got ${repos.length} repos`);
         return repos;
     });
@@ -215,6 +164,74 @@ function getCommitsForRepo(client, repo) {
     });
 }
 exports.getCommitsForRepo = getCommitsForRepo;
+function sortCommitsByCommitDate(commits, order) {
+    const pass = order;
+    const fail = order === types_1.SortingOrder.Ascending
+        ? types_1.SortingOrder.Descending
+        : types_1.SortingOrder.Ascending;
+    return (commits = commits.sort((c1, c2) => {
+        var _a, _b, _c, _d, _e;
+        if (!((_a = c1.commit.committer) === null || _a === void 0 ? void 0 : _a.date)) {
+            core.debug(`Commit ${c1.sha} for repo ${c1} does not have a committed date. Cannot sort`);
+            return fail;
+        }
+        if (((_b = c1.commit.committer) === null || _b === void 0 ? void 0 : _b.date) && ((_c = c2.commit.committer) === null || _c === void 0 ? void 0 : _c.date)) {
+            const date1 = new Date((_d = c1.commit.committer) === null || _d === void 0 ? void 0 : _d.date);
+            const date2 = new Date((_e = c2.commit.committer) === null || _e === void 0 ? void 0 : _e.date);
+            if (date1 === date2)
+                return 0;
+            // Sort in descending order. If ascending, we swap the signs.
+            else if (date1 < date2)
+                return pass;
+        }
+        return fail;
+    }));
+}
+exports.sortCommitsByCommitDate = sortCommitsByCommitDate;
+function sortRepoMapByCommitDate(map, order) {
+    const pass = order;
+    const fail = order === types_1.SortingOrder.Ascending
+        ? types_1.SortingOrder.Descending
+        : types_1.SortingOrder.Ascending;
+    return new Map([...map]
+        .sort((list1, list2) => {
+        var _a, _b, _c, _d;
+        const commit1 = list1[1][1][0];
+        const commit2 = list2[1][1][0];
+        const date1 = ((_a = commit1.commit.committer) === null || _a === void 0 ? void 0 : _a.date)
+            ? new Date((_b = commit1.commit.committer) === null || _b === void 0 ? void 0 : _b.date)
+            : new Date(0);
+        const date2 = ((_c = commit2.commit.committer) === null || _c === void 0 ? void 0 : _c.date)
+            ? new Date((_d = commit2.commit.committer) === null || _d === void 0 ? void 0 : _d.date)
+            : new Date(0);
+        if (date1 === date2)
+            return 0;
+        else if (date1 < date2)
+            return pass;
+        return fail;
+    })
+        .map(entry => {
+        var _a;
+        core.info(`Sorted commits for repo ${entry[1][0].full_name}. Latest commit date: ${(_a = entry[1][1][0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
+        return entry;
+    }));
+}
+exports.sortRepoMapByCommitDate = sortRepoMapByCommitDate;
+function repoMapToRepoStatsMap(map, nEntries = 5) {
+    return [...map].slice(0, nEntries).map(entry => {
+        var _a, _b;
+        const latestCommit = entry[1][1][0];
+        const newLine = latestCommit.commit.message.indexOf('\n');
+        const msg = latestCommit.commit.message.slice(0, newLine > 0 ? newLine : undefined);
+        const date = (_b = (_a = latestCommit.commit.committer) === null || _a === void 0 ? void 0 : _a.date) !== null && _b !== void 0 ? _b : '';
+        return {
+            repo: entry[0],
+            commitMsg: msg,
+            date
+        };
+    });
+}
+exports.repoMapToRepoStatsMap = repoMapToRepoStatsMap;
 
 
 /***/ }),
