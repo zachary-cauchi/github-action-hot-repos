@@ -33,6 +33,6 @@ jobs:
       - name: Check output of actions
         run: |
           echo Printing action output;
-          echo ${{ steps.test.outputs.topRepos }};
+          read -r -d '' ${{ steps.test.outputs.topRepos }} << EOM;
           echo printing complete;
         id: post
