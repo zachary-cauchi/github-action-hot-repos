@@ -187,7 +187,7 @@ function sortCommitsByCommitDate(commits, order) {
             if (date1 === date2)
                 return 0;
             // Sort in descending order. If ascending, we swap the signs.
-            else if (date1 < date2)
+            else if (date1 > date2)
                 return pass;
         }
         return fail;
@@ -212,7 +212,7 @@ function sortRepoMapByCommitDate(map, order) {
             : new Date(0);
         if (date1 === date2)
             return 0;
-        else if (date1 < date2)
+        else if (date1 > date2)
             return pass;
         return fail;
     })

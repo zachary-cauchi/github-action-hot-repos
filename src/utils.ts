@@ -69,7 +69,7 @@ export function sortCommitsByCommitDate(
 
       if (date1 === date2) return 0
       // Sort in descending order. If ascending, we swap the signs.
-      else if (date1 < date2) return pass
+      else if (date1 > date2) return pass
     }
 
     return fail
@@ -100,7 +100,7 @@ export function sortRepoMapByCommitDate(
           : new Date(0)
 
         if (date1 === date2) return 0
-        else if (date1 < date2) return pass
+        else if (date1 > date2) return pass
 
         return fail
       })
