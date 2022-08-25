@@ -7,6 +7,24 @@ export enum SortingOrder {
   Descending = -1
 }
 
+export function getSortingOrderFromString(name: string): SortingOrder {
+  const lower = name.toLowerCase()
+
+  if (lower === 'asc' || lower === 'ascending') {
+    return SortingOrder.Ascending
+  } else if (lower === 'desc' || lower === 'descending') {
+    return SortingOrder.Descending
+  } else {
+    throw new TypeError(`No sorting order for name ${name}`)
+  }
+}
+
+export function getOppositeOrder(order: SortingOrder): SortingOrder {
+  return order === SortingOrder.Ascending
+    ? SortingOrder.Descending
+    : SortingOrder.Ascending
+}
+
 export type GitHubClient = InstanceType<typeof GitHub>
 
 export type Repo =

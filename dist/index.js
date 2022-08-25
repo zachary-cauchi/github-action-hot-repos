@@ -47,27 +47,23 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token', { required: true });
+            const order = (0, types_1.getSortingOrderFromString)(core.getInput('sortOrder'));
+            const nEntries = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1, Number.parseInt(core.getInput('nEntries'))));
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
             const mappedCommits = new Map();
-            try {
-                for (const repo of repos) {
-                    let commits = yield (0, utils_1.getCommitsForRepo)(client, repo);
-                    commits = (0, utils_1.sortCommitsByCommitDate)(commits, types_1.SortingOrder.Descending);
-                    core.info(`Sorted commits for repo ${repo.full_name}. Latest commit date: ${(_a = commits[0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
-                    mappedCommits.set(repo.name, [repo, commits]);
-                }
-                const sortedMap = (0, utils_1.sortRepoMapByCommitDate)(mappedCommits, types_1.SortingOrder.Descending);
-                core.info(`Sorted all repos`);
-                const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap);
-                core.setOutput('topRepos', JSON.stringify(topRepos, null, 2));
+            for (const repo of repos) {
+                let commits = yield (0, utils_1.getCommitsForRepo)(client, repo);
+                commits = (0, utils_1.sortCommitsByCommitDate)(commits, order);
+                core.info(`Sorted commits for repo ${repo.full_name}. Latest commit date: ${(_a = commits[0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
+                mappedCommits.set(repo.name, [repo, commits]);
             }
-            catch (e) {
-                if (e instanceof Error) {
-                    core.error('Something went wrong getting the commits.');
-                    core.setFailed(e);
-                }
-            }
+            const sortedMap = (0, utils_1.sortRepoMapByCommitDate)(mappedCommits, order);
+            core.info(`Sorted all repos`);
+            const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap, nEntries);
+            core.info('Processing complete. Sending output.');
+            core.setOutput('topRepos', JSON.stringify(topRepos, null, 2));
+            core.info('Complete. Exiting...');
         }
         catch (error) {
             if (error instanceof Error) {
@@ -88,12 +84,31 @@ run();
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.SortingOrder = void 0;
+exports.getOppositeOrder = exports.getSortingOrderFromString = exports.SortingOrder = void 0;
 var SortingOrder;
 (function (SortingOrder) {
     SortingOrder[SortingOrder["Ascending"] = 1] = "Ascending";
     SortingOrder[SortingOrder["Descending"] = -1] = "Descending";
 })(SortingOrder = exports.SortingOrder || (exports.SortingOrder = {}));
+function getSortingOrderFromString(name) {
+    const lower = name.toLowerCase();
+    if (lower === 'asc' || lower === 'ascending') {
+        return SortingOrder.Ascending;
+    }
+    else if (lower === 'desc' || lower === 'descending') {
+        return SortingOrder.Descending;
+    }
+    else {
+        throw new TypeError(`No sorting order for name ${name}`);
+    }
+}
+exports.getSortingOrderFromString = getSortingOrderFromString;
+function getOppositeOrder(order) {
+    return order === SortingOrder.Ascending
+        ? SortingOrder.Descending
+        : SortingOrder.Ascending;
+}
+exports.getOppositeOrder = getOppositeOrder;
 
 
 /***/ }),
@@ -150,8 +165,6 @@ function getUserPublicRepos(client) {
         core.debug('Getting user');
         const username = github_1.context.repo.owner;
         core.info(`Getting repos for user ${username}`);
-        // const user = (await client.rest.users.getAuthenticated()).data
-        // core.debug(`Got user ${user.login}`)
         const repos = (yield client.rest.repos.listForUser({ username })).data;
         core.debug(`Got ${repos.length} repos`);
         return repos;
@@ -172,9 +185,7 @@ function getCommitsForRepo(client, repo) {
 exports.getCommitsForRepo = getCommitsForRepo;
 function sortCommitsByCommitDate(commits, order) {
     const pass = order;
-    const fail = order === types_1.SortingOrder.Ascending
-        ? types_1.SortingOrder.Descending
-        : types_1.SortingOrder.Ascending;
+    const fail = (0, types_1.getOppositeOrder)(order);
     return (commits = commits.sort((c1, c2) => {
         var _a, _b, _c, _d, _e;
         if (!((_a = c1.commit.committer) === null || _a === void 0 ? void 0 : _a.date)) {
@@ -196,9 +207,7 @@ function sortCommitsByCommitDate(commits, order) {
 exports.sortCommitsByCommitDate = sortCommitsByCommitDate;
 function sortRepoMapByCommitDate(map, order) {
     const pass = order;
-    const fail = order === types_1.SortingOrder.Ascending
-        ? types_1.SortingOrder.Descending
-        : types_1.SortingOrder.Ascending;
+    const fail = (0, types_1.getOppositeOrder)(order);
     return new Map([...map]
         .sort((list1, list2) => {
         var _a, _b, _c, _d;

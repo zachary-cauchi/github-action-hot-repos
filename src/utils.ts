@@ -1,6 +1,13 @@
 import * as core from '@actions/core'
 import {context, getOctokit} from '@actions/github'
-import {Commit, GitHubClient, Repo, RepoCommitMap, SortingOrder} from './types'
+import {
+  Commit,
+  getOppositeOrder,
+  GitHubClient,
+  Repo,
+  RepoCommitMap,
+  SortingOrder
+} from './types'
 
 export function getClient(token: string): GitHubClient {
   core.debug('Getting client')
@@ -15,9 +22,6 @@ export async function getUserPublicRepos(
   const username = context.repo.owner
 
   core.info(`Getting repos for user ${username}`)
-
-  // const user = (await client.rest.users.getAuthenticated()).data
-  // core.debug(`Got user ${user.login}`)
 
   const repos = (await client.rest.repos.listForUser({username})).data
 
@@ -49,10 +53,7 @@ export function sortCommitsByCommitDate(
   order: SortingOrder
 ): Commit[] {
   const pass: number = order
-  const fail =
-    order === SortingOrder.Ascending
-      ? SortingOrder.Descending
-      : SortingOrder.Ascending
+  const fail = getOppositeOrder(order)
 
   return (commits = commits.sort((c1, c2) => {
     if (!c1.commit.committer?.date) {
@@ -81,10 +82,7 @@ export function sortRepoMapByCommitDate(
   order: SortingOrder
 ): RepoCommitMap {
   const pass: number = order
-  const fail =
-    order === SortingOrder.Ascending
-      ? SortingOrder.Descending
-      : SortingOrder.Ascending
+  const fail: number = getOppositeOrder(order)
 
   return new Map(
     [...map]
