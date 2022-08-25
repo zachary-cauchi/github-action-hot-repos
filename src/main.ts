@@ -39,6 +39,8 @@ async function run(): Promise<void> {
 
     core.info(`Sorted all repos`)
 
+    core.info(`Getting first ${nEntries} repos.`)
+
     const topRepos = repoMapToRepoStatsMap(sortedMap, nEntries)
 
     core.info('Processing complete. Sending output.')

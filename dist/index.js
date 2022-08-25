@@ -60,6 +60,7 @@ function run() {
             }
             const sortedMap = (0, utils_1.sortRepoMapByCommitDate)(mappedCommits, order);
             core.info(`Sorted all repos`);
+            core.info(`Getting first ${nEntries} repos.`);
             const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap, nEntries);
             core.info('Processing complete. Sending output.');
             core.setOutput('topRepos', JSON.stringify(topRepos, null, 2));
