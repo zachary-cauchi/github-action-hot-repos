@@ -88,6 +88,12 @@ run();
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SortingOrder = void 0;
+var SortingOrder;
+(function (SortingOrder) {
+    SortingOrder[SortingOrder["Ascending"] = 1] = "Ascending";
+    SortingOrder[SortingOrder["Descending"] = -1] = "Descending";
+})(SortingOrder = exports.SortingOrder || (exports.SortingOrder = {}));
 
 
 /***/ }),

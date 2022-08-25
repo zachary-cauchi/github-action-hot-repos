@@ -2,7 +2,7 @@
 import {RestEndpointMethodTypes} from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types'
 import {GitHub} from '@actions/github/lib/utils'
 
-export declare enum SortingOrder {
+export enum SortingOrder {
   Ascending = 1,
   Descending = -1
 }
