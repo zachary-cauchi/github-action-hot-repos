@@ -15,7 +15,7 @@ async function run(): Promise<void> {
     const order = getSortingOrderFromString(core.getInput('sortOrder'))
     const nEntries = Math.min(
       Number.MAX_SAFE_INTEGER,
-      Math.max(1, Number.parseInt(core.getInput('nEntries')))
+      Math.max(1, Number.parseInt(core.getInput('entryCount')))
     )
 
     const client = getClient(token)

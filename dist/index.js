@@ -48,7 +48,7 @@ function run() {
         try {
             const token = core.getInput('token', { required: true });
             const order = (0, types_1.getSortingOrderFromString)(core.getInput('sortOrder'));
-            const nEntries = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1, Number.parseInt(core.getInput('nEntries'))));
+            const nEntries = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1, Number.parseInt(core.getInput('entryCount'))));
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
             const mappedCommits = new Map();
