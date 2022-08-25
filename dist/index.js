@@ -238,7 +238,9 @@ function repoMapToRepoStatsMap(map, nEntries = 5) {
         var _a, _b;
         const latestCommit = entry[1][1][0];
         const newLine = latestCommit.commit.message.indexOf('\n');
-        const msg = newLine > 0 ? latestCommit.commit.message.slice(0, newLine) : latestCommit.commit.message;
+        const msg = newLine > 0
+            ? latestCommit.commit.message.slice(0, newLine)
+            : latestCommit.commit.message;
         const date = (_b = (_a = latestCommit.commit.committer) === null || _a === void 0 ? void 0 : _a.date) !== null && _b !== void 0 ? _b : '';
         return {
             repo: entry[0],
