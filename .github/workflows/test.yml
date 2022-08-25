@@ -35,5 +35,6 @@ jobs:
           echo Printing action output;
           cat <<-EOF;
           ${{ steps.test.outputs.topRepos }}
+          EOF;
           echo printing complete;
         id: post
