@@ -1,11 +1,30 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Get Hot Repos'
+description: 'Get the repos you most recently committed to.'
+author: 'Zachary Cauchi'
+branding:
+  icon: trending-up
+  color: green
+
 inputs:
-  milliseconds: # change this
+  token:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Your github personal access token. Usually, just need to set it to your GITHUB_TOKEN in the workflow.'
+  entryCount:
+    description: 'How many repos to fetch from your list.'
+    required: false
+    default: '5'
+  sortOrder:
+    description: |
+      Whether to sort in ascending order or descending order.
+      Accepted values:
+      ascending | asc
+      descending | desc
+    required: false
+    default: desc
+
+outputs:
+  topRepos:
+    description: 'The top repos reported by the action. Repos are sorted in descending order based on the date of the last commit.'
 runs:
   using: 'node16'
   main: 'dist/index.js'
