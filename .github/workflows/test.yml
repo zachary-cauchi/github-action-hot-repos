@@ -8,7 +8,8 @@ on: # rebuild any PRs and main branch changes
   
   workflow_dispatch:
 
-permissions: read-all # This is necessary for appropriate permissions to be granted.
+permissions:
+  contents: read # This is necessary for appropriate permissions to be granted.
 
 jobs:
   build: # make sure build/ci work properly
@@ -28,7 +29,6 @@ jobs:
         id: test
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # token: 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
       
       - name: Check output of actions
         run: |
