@@ -42,6 +42,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const types_1 = __nccwpck_require__(8164);
 const utils_1 = __nccwpck_require__(918);
+/**
+ * Main entrypoint.
+ */
 function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -59,7 +62,7 @@ function run() {
                 core.info(`Sorted commits for repo ${repo.full_name}. Latest commit date: ${(_a = commits[0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
                 mappedCommits.set(repo.name, [repo, commits]);
             }
-            const sortedMap = (0, utils_1.sortRepoMapByCommitDate)(mappedCommits, initialOrder);
+            const sortedMap = (0, utils_1.sortRepoMapByFirstCommitDate)(mappedCommits, initialOrder);
             core.info(`Sorted all repos`);
             core.info(`Getting first ${nEntries} repos.`);
             const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap, nEntries, order);
@@ -87,11 +90,18 @@ run();
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getOppositeOrder = exports.getSortingOrderFromString = exports.SortingOrder = void 0;
+// Represents the direction in which to sort repos.
 var SortingOrder;
 (function (SortingOrder) {
     SortingOrder[SortingOrder["Ascending"] = 1] = "Ascending";
     SortingOrder[SortingOrder["Descending"] = -1] = "Descending";
 })(SortingOrder = exports.SortingOrder || (exports.SortingOrder = {}));
+/**
+ *
+ * @param name The name of the sorting order.
+ * @returns A {@link SortingOrder} which matches the name given.
+ * @throws A {@link TypeError} if no match is found.
+ */
 function getSortingOrderFromString(name) {
     const lower = name.toLowerCase();
     if (lower === 'asc' || lower === 'ascending') {
@@ -105,6 +115,12 @@ function getSortingOrderFromString(name) {
     }
 }
 exports.getSortingOrderFromString = getSortingOrderFromString;
+/**
+ * If the order is {@link SortingOrder.Ascending}, return {@link SortingOrder.Descending}, and vice versa.
+ *
+ * @param order The order with which to find the opposite.
+ * @returns The order logically opposite to the one given.
+ */
 function getOppositeOrder(order) {
     return order === SortingOrder.Ascending
         ? SortingOrder.Descending
@@ -153,45 +169,68 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.repoMapToRepoStatsMap = exports.sortRepoMapByCommitDate = exports.sortCommitsByCommitDate = exports.getCommitsForRepo = exports.getUserPublicRepos = exports.getClient = void 0;
+exports.repoMapToRepoStatsMap = exports.sortRepoMapByFirstCommitDate = exports.sortCommitsByCommitDate = exports.getCommitsForRepo = exports.getUserPublicRepos = exports.getClient = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const types_1 = __nccwpck_require__(8164);
+/**
+ * Fetch a client for consuming the github api.
+ * @param token A github token for fetching the client.
+ * @returns A {@link GitHubClient} client configured with the given token.
+ */
 function getClient(token) {
-    core.debug('Getting client');
+    core.debug('Getting client.');
     return (0, github_1.getOctokit)(token);
 }
 exports.getClient = getClient;
+/**
+ * Get a list of all public repositories belonging to the user.
+ * @param client The client to use.
+ * @returns A list of public repositories belonging to the client user.
+ */
 function getUserPublicRepos(client) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.debug('Getting user');
+        core.debug('Getting user.');
         const username = github_1.context.repo.owner;
-        core.info(`Getting repos for user ${username}`);
+        core.info(`Getting repos for user ${username}.`);
         const repos = (yield client.rest.repos.listForUser({ username })).data;
-        core.debug(`Got ${repos.length} repos`);
+        core.debug(`Got ${repos.length} repos.`);
         return repos;
     });
 }
 exports.getUserPublicRepos = getUserPublicRepos;
+/**
+ * Get a list of commits for the given repo.
+ * @param client The client to use.
+ * @param repo The repo to search.
+ * @returns An array of commits belonging to the given {@link repo}.
+ */
 function getCommitsForRepo(client, repo) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info(`Getting commits for repo ${repo.name}`);
+        core.info(`Getting commits for repo ${repo.name}.`);
         const commits = (yield client.rest.repos.listCommits({
             owner: repo.owner.login,
             repo: repo.name
         })).data;
-        core.debug(`Got ${commits.length} commits`);
+        core.debug(`Got ${commits.length} commits.`);
         return commits;
     });
 }
 exports.getCommitsForRepo = getCommitsForRepo;
+/**
+ * Sorts a given array by their commit date in ascending/descending order.
+ * The {@link commits} array is **mutated**, and returned in the process.
+ * @param commits The commits array to sort.
+ * @param order The order in which to sort them.
+ * @returns The same {@link commits} array but sorted.
+ */
 function sortCommitsByCommitDate(commits, order) {
     const pass = order;
     const fail = (0, types_1.getOppositeOrder)(order);
     return (commits = commits.sort((c1, c2) => {
         var _a, _b, _c, _d, _e;
         if (!((_a = c1.commit.committer) === null || _a === void 0 ? void 0 : _a.date)) {
-            core.debug(`Commit ${c1.sha} for repo ${c1} does not have a committed date. Cannot sort`);
+            core.debug(`Commit ${c1.sha} for repo ${c1} does not have a committed date. Assuming older.`);
             return fail;
         }
         if (((_b = c1.commit.committer) === null || _b === void 0 ? void 0 : _b.date) && ((_c = c2.commit.committer) === null || _c === void 0 ? void 0 : _c.date)) {
@@ -199,7 +238,6 @@ function sortCommitsByCommitDate(commits, order) {
             const date2 = new Date((_e = c2.commit.committer) === null || _e === void 0 ? void 0 : _e.date);
             if (date1 === date2)
                 return 0;
-            // Sort in descending order. If ascending, we swap the signs.
             else if (date1 > date2)
                 return pass;
         }
@@ -207,7 +245,14 @@ function sortCommitsByCommitDate(commits, order) {
     }));
 }
 exports.sortCommitsByCommitDate = sortCommitsByCommitDate;
-function sortRepoMapByCommitDate(map, order) {
+/**
+ * Sort the given {@link RepoCommitMap} in order by their last commit date.
+ * This assumes the commits are **already sorted**.
+ * @param map A map containing the repositories - and their commits - to sort.
+ * @param order The order in which to sort the map entries.
+ * @returns Returns a new map with the original {@link map} entries sorted.
+ */
+function sortRepoMapByFirstCommitDate(map, order) {
     const pass = order;
     const fail = (0, types_1.getOppositeOrder)(order);
     return new Map([...map]
@@ -233,7 +278,15 @@ function sortRepoMapByCommitDate(map, order) {
         return entry;
     }));
 }
-exports.sortRepoMapByCommitDate = sortRepoMapByCommitDate;
+exports.sortRepoMapByFirstCommitDate = sortRepoMapByFirstCommitDate;
+/**
+ * Construct an array of {@link RepoStats} from the given {@link map}.
+ * The first {@link nEntries} from the map are selected, and inserted into the array in the {@link sortOrder} specified.
+ * @param map The input {@link RepoCommitMap} to use for constructing the returned array.
+ * @param nEntries How many entries to select from the {@link map}.
+ * @param sortOrder The order in which to put newly-added entries into the map.
+ * @returns A new array of {@link RepoStats} based on the given {@link map}.
+ */
 function repoMapToRepoStatsMap(map, nEntries = 5, sortOrder = types_1.SortingOrder.Descending) {
     return [...map]
         .slice(0, nEntries)
