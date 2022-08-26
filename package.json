@@ -1,8 +1,8 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "github-action-hot-repos",
+  "version": "0.1.0",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "An action for getting a user's most recently-committed repos.",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -15,12 +15,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/zachary-cauchi/github-action-hot-repos.git"
   },
   "keywords": [
     "actions",
     "node",
-    "setup"
+    "commits"
   ],
   "author": "",
   "license": "MIT",
