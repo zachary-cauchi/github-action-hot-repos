@@ -228,19 +228,13 @@ function sortCommitsByCommitDate(commits, order) {
     const pass = order;
     const fail = (0, types_1.getOppositeOrder)(order);
     return (commits = commits.sort((c1, c2) => {
-        var _a, _b, _c, _d, _e;
-        if (!((_a = c1.commit.committer) === null || _a === void 0 ? void 0 : _a.date)) {
-            core.debug(`Commit ${c1.sha} for repo ${c1} does not have a committed date. Assuming older.`);
-            return fail;
-        }
-        if (((_b = c1.commit.committer) === null || _b === void 0 ? void 0 : _b.date) && ((_c = c2.commit.committer) === null || _c === void 0 ? void 0 : _c.date)) {
-            const date1 = new Date((_d = c1.commit.committer) === null || _d === void 0 ? void 0 : _d.date);
-            const date2 = new Date((_e = c2.commit.committer) === null || _e === void 0 ? void 0 : _e.date);
-            if (date1 === date2)
-                return 0;
-            else if (date1 > date2)
-                return pass;
-        }
+        var _a, _b, _c, _d;
+        const date1 = new Date((_b = (_a = c1.commit.committer) === null || _a === void 0 ? void 0 : _a.date) !== null && _b !== void 0 ? _b : 0);
+        const date2 = new Date((_d = (_c = c2.commit.committer) === null || _c === void 0 ? void 0 : _c.date) !== null && _d !== void 0 ? _d : 0);
+        if (date1 === date2)
+            return 0;
+        else if (date1 > date2)
+            return pass;
         return fail;
     }));
 }
@@ -260,12 +254,8 @@ function sortRepoMapByFirstCommitDate(map, order) {
         var _a, _b, _c, _d;
         const commit1 = list1[1][1][0];
         const commit2 = list2[1][1][0];
-        const date1 = ((_a = commit1.commit.committer) === null || _a === void 0 ? void 0 : _a.date)
-            ? new Date((_b = commit1.commit.committer) === null || _b === void 0 ? void 0 : _b.date)
-            : new Date(0);
-        const date2 = ((_c = commit2.commit.committer) === null || _c === void 0 ? void 0 : _c.date)
-            ? new Date((_d = commit2.commit.committer) === null || _d === void 0 ? void 0 : _d.date)
-            : new Date(0);
+        const date1 = new Date((_b = (_a = commit1.commit.committer) === null || _a === void 0 ? void 0 : _a.date) !== null && _b !== void 0 ? _b : 0);
+        const date2 = new Date((_d = (_c = commit2.commit.committer) === null || _c === void 0 ? void 0 : _c.date) !== null && _d !== void 0 ? _d : 0);
         if (date1 === date2)
             return 0;
         else if (date1 > date2)
