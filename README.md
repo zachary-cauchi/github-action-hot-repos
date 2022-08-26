@@ -1,10 +1,8 @@
 # github-action-hot-repos
 
-<p align="center">
   [![Check dist](https://github.com/zachary-cauchi/github-action-hot-repos/actions/workflows/check-dist.yml/badge.svg)](https://github.com/zachary-cauchi/github-action-hot-repos/actions/workflows/check-dist.yml)
   [![CodeQL](https://github.com/zachary-cauchi/github-action-hot-repos/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/zachary-cauchi/github-action-hot-repos/actions/workflows/codeql-analysis.yml)
   [![build-test](https://github.com/zachary-cauchi/github-action-hot-repos/actions/workflows/test.yml/badge.svg)](https://github.com/zachary-cauchi/github-action-hot-repos/actions/workflows/test.yml)
-</p>
 
 Get your most recently committed repos! This action will perform the following:
 * Get all your public repos.
