@@ -6,6 +6,7 @@ import {
   GitHubClient,
   Repo,
   RepoCommitMap,
+  RepoStats,
   SortingOrder
 } from './types'
 
@@ -128,15 +129,6 @@ export function sortRepoMapByFirstCommitDate(
 }
 
 /**
- * Describes a repo by it's name and latest commit message and date.
- */
-export type RepoStats = {
-  repo: string
-  commitMsg: string
-  date: string | Date
-}
-
-/**
  * Construct an array of {@link RepoStats} from the given {@link map}.
  * The first {@link nEntries} from the map are selected, and inserted into the array in the {@link sortOrder} specified.
  * @param map The input {@link RepoCommitMap} to use for constructing the returned array.
@@ -163,6 +155,8 @@ export function repoMapToRepoStatsMap(
 
       return {
         repo: entry[0],
+        repoUrl: entry[1][0].html_url,
+        commitUrl: latestCommit.html_url,
         commitMsg: msg,
         date
       }
