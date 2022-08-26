@@ -10,10 +10,13 @@ import {
   getCommitsForRepo,
   getUserPublicRepos,
   sortCommitsByCommitDate,
-  sortRepoMapByCommitDate,
+  sortRepoMapByFirstCommitDate,
   repoMapToRepoStatsMap
 } from './utils'
 
+/**
+ * Main entrypoint.
+ */
 async function run(): Promise<void> {
   try {
     const token = core.getInput('token', {required: true})
@@ -41,7 +44,7 @@ async function run(): Promise<void> {
       mappedCommits.set(repo.name, [repo, commits])
     }
 
-    const sortedMap = sortRepoMapByCommitDate(mappedCommits, initialOrder)
+    const sortedMap = sortRepoMapByFirstCommitDate(mappedCommits, initialOrder)
 
     core.info(`Sorted all repos`)
 

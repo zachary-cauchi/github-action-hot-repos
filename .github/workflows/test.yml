@@ -30,7 +30,8 @@ jobs:
         id: test
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          sortOrder: asc
+          entryCount: 6
+          sortOrder: desc
       
       - name: Check output of actions
         run: |
