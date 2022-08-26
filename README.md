@@ -37,7 +37,9 @@ Default: ascending
 A JSON array of all the repos returned in the following format:
 ```json
 {
-  "repo": "string", // Name of the scene.
+  "repo": "string", // Name of the repo.
+  "repoUrl": "url", // The url to the repo.
+  "commitUrl": "url", // The url leading to the latest commit.
   "commitMsg": "string", // The commit message (or first line of the commit message).
   "date": "date", // ISO 8601 date string of the last commit.
 }

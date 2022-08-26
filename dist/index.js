@@ -290,6 +290,8 @@ function repoMapToRepoStatsMap(map, nEntries = 5, sortOrder = types_1.SortingOrd
         const date = (_b = (_a = latestCommit.commit.committer) === null || _a === void 0 ? void 0 : _a.date) !== null && _b !== void 0 ? _b : '';
         return {
             repo: entry[0],
+            repoUrl: entry[1][0].html_url,
+            commitUrl: latestCommit.html_url,
             commitMsg: msg,
             date
         };

@@ -39,6 +39,22 @@ export function getOppositeOrder(order: SortingOrder): SortingOrder {
 }
 
 /**
+ * Describes a repo by it's name and latest commit message and date.
+ */
+export type RepoStats = {
+  // The name of the repo.
+  repo: string
+  // The url to the repo.
+  repoUrl: string
+  // The url to the latest commit.
+  commitUrl: string
+  // The message (or first message line) of the commit.
+  commitMsg: string
+  // The date of the commit.
+  date: string | Date
+}
+
+/**
  * The client type returned by the `@actions/github` library.
  */
 export type GitHubClient = InstanceType<typeof GitHub>
