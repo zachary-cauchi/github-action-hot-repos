@@ -126,11 +126,10 @@ export function repoMapToRepoStatsMap(
     const latestCommit = entry[1][1][0]
 
     const newLine = latestCommit.commit.message.indexOf('\n')
-    const msg = latestCommit.commit.message.slice(
-      0,
-      newLine > 0 ? newLine : undefined
-    )
-
+    const msg =
+      newLine > 0
+        ? latestCommit.commit.message.slice(0, newLine)
+        : latestCommit.commit.message
     const date = latestCommit.commit.committer?.date ?? ''
 
     return {
