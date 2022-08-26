@@ -120,22 +120,37 @@ export type RepoStats = {
 
 export function repoMapToRepoStatsMap(
   map: RepoCommitMap,
-  nEntries = 5
+  nEntries = 5,
+  sortOrder = SortingOrder.Descending
 ): RepoStats[] {
-  return [...map].slice(0, nEntries).map(entry => {
-    const latestCommit = entry[1][1][0]
+  return [...map]
+    .slice(0, nEntries)
+    .map(entry => {
+      const latestCommit = entry[1][1][0]
 
-    const newLine = latestCommit.commit.message.indexOf('\n')
-    const msg =
-      newLine > 0
-        ? latestCommit.commit.message.slice(0, newLine)
-        : latestCommit.commit.message
-    const date = latestCommit.commit.committer?.date ?? ''
+      const newLine = latestCommit.commit.message.indexOf('\n')
+      const msg =
+        newLine > 0
+          ? latestCommit.commit.message.slice(0, newLine)
+          : latestCommit.commit.message
+      const date = latestCommit.commit.committer?.date ?? ''
 
-    return {
-      repo: entry[0],
-      commitMsg: msg,
-      date
-    }
-  })
+      return {
+        repo: entry[0],
+        commitMsg: msg,
+        date
+      }
+    })
+    .sort((e1, e2) => {
+      const pass: number = sortOrder
+      const fail: number = getOppositeOrder(sortOrder)
+
+      const date1 = new Date(e1.date)
+      const date2 = new Date(e2.date)
+
+      if (date1 === date2) return 0
+      else if (date1 > date2) return pass
+
+      return fail
+    })
 }

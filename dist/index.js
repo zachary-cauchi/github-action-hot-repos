@@ -48,20 +48,21 @@ function run() {
         try {
             const token = core.getInput('token', { required: true });
             const order = (0, types_1.getSortingOrderFromString)(core.getInput('sortOrder'));
+            const initialOrder = types_1.SortingOrder.Descending;
             const nEntries = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1, Number.parseInt(core.getInput('entryCount'))));
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
             const mappedCommits = new Map();
             for (const repo of repos) {
                 let commits = yield (0, utils_1.getCommitsForRepo)(client, repo);
-                commits = (0, utils_1.sortCommitsByCommitDate)(commits, order);
+                commits = (0, utils_1.sortCommitsByCommitDate)(commits, initialOrder);
                 core.info(`Sorted commits for repo ${repo.full_name}. Latest commit date: ${(_a = commits[0].commit.committer) === null || _a === void 0 ? void 0 : _a.date}`);
                 mappedCommits.set(repo.name, [repo, commits]);
             }
-            const sortedMap = (0, utils_1.sortRepoMapByCommitDate)(mappedCommits, order);
+            const sortedMap = (0, utils_1.sortRepoMapByCommitDate)(mappedCommits, initialOrder);
             core.info(`Sorted all repos`);
             core.info(`Getting first ${nEntries} repos.`);
-            const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap, nEntries);
+            const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap, nEntries, order);
             core.info('Processing complete. Sending output.');
             core.setOutput('topRepos', JSON.stringify(topRepos, null, 2));
             core.info('Complete. Exiting...');
@@ -233,8 +234,10 @@ function sortRepoMapByCommitDate(map, order) {
     }));
 }
 exports.sortRepoMapByCommitDate = sortRepoMapByCommitDate;
-function repoMapToRepoStatsMap(map, nEntries = 5) {
-    return [...map].slice(0, nEntries).map(entry => {
+function repoMapToRepoStatsMap(map, nEntries = 5, sortOrder = types_1.SortingOrder.Descending) {
+    return [...map]
+        .slice(0, nEntries)
+        .map(entry => {
         var _a, _b;
         const latestCommit = entry[1][1][0];
         const newLine = latestCommit.commit.message.indexOf('\n');
@@ -247,6 +250,17 @@ function repoMapToRepoStatsMap(map, nEntries = 5) {
             commitMsg: msg,
             date
         };
+    })
+        .sort((e1, e2) => {
+        const pass = sortOrder;
+        const fail = (0, types_1.getOppositeOrder)(sortOrder);
+        const date1 = new Date(e1.date);
+        const date2 = new Date(e2.date);
+        if (date1 === date2)
+            return 0;
+        else if (date1 > date2)
+            return pass;
+        return fail;
     });
 }
 exports.repoMapToRepoStatsMap = repoMapToRepoStatsMap;
