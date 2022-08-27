@@ -124,11 +124,16 @@ function writeMarkdown(content, path) {
             core.info('No markdown filepath provided. Skipping saving of markdown.');
             return;
         }
-        const stats = yield fs.stat(path);
-        if (!stats.isFile()) {
-            const err = new Error(`Path ${path} is not a file. Cannot save markdown.`);
-            core.setFailed(err);
-            throw err;
+        try {
+            const stats = yield fs.stat(path);
+            if (!stats.isFile()) {
+                const err = new Error(`Path ${path} is not a file. Cannot save markdown.`);
+                core.setFailed(err);
+                throw err;
+            }
+        }
+        catch (e) {
+            core.debug(`File ${path} does not exist. Creating file`);
         }
         yield fs.writeFile(path, content);
         core.info(`Wrote file to ${path}.`);

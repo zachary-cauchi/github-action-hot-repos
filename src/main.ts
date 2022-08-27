@@ -140,14 +140,18 @@ async function writeMarkdown(content: string, path: PathLike): Promise<void> {
     return
   }
 
-  const stats = await fs.stat(path)
+  try {
+    const stats = await fs.stat(path)
 
-  if (!stats.isFile()) {
-    const err = new Error(`Path ${path} is not a file. Cannot save markdown.`)
+    if (!stats.isFile()) {
+      const err = new Error(`Path ${path} is not a file. Cannot save markdown.`)
 
-    core.setFailed(err)
+      core.setFailed(err)
 
-    throw err
+      throw err
+    }
+  } catch (e) {
+    core.debug(`File ${path} does not exist. Creating file`)
   }
 
   await fs.writeFile(path, content)
