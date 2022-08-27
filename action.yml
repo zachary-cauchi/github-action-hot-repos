@@ -21,6 +21,12 @@ inputs:
       descending | desc
     required: false
     default: desc
+  jsonFilepath:
+    description: |
+      The path to the file for writing the generated json.
+      If you'd like to not save to a file, set this to an empty string ('') or ignore it.
+    required: false
+    default: ''
   mdHeader:
     description: |
       A header for the generated markdown file.
@@ -38,7 +44,7 @@ inputs:
   mdFilepath:
     description: |
       The path to the file for writing the generated markdown.
-      If you'd like to not save to a file, set this to an empty string ('')
+      If you'd like to not save to a file, set this to an empty string ('') or ignore it.
       If you aren't using markdown, this field can be ignored.
     required: false
     default: ''

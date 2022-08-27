@@ -25,6 +25,7 @@ type ActionInputs = {
   order: SortingOrder
   initialOrder: SortingOrder
   nEntries: number
+  jsonFilepath: string
   mdHeader: string
   mdListTemplate: string
   mdFilepath: string
@@ -44,6 +45,7 @@ function getInputs(): ActionInputs {
     Number.MAX_SAFE_INTEGER,
     Math.max(1, Number.parseInt(core.getInput('entryCount')))
   )
+  const jsonFilepath = core.getInput('jsonFilepath')
 
   const mdHeader = core.getInput('mdHeader', {trimWhitespace: false})
   const mdListTemplate = core.getInput('mdListTemplate', {
@@ -57,6 +59,7 @@ function getInputs(): ActionInputs {
     order,
     initialOrder,
     nEntries,
+    jsonFilepath,
     mdHeader,
     mdListTemplate,
     mdFilepath,
@@ -74,6 +77,7 @@ async function run(): Promise<void> {
       order,
       initialOrder,
       nEntries,
+      jsonFilepath,
       mdHeader,
       mdListTemplate,
       mdFilepath,
@@ -103,10 +107,11 @@ async function run(): Promise<void> {
     core.info(`Getting first ${nEntries} repos.`)
 
     const topRepos = repoMapToRepoStatsMap(sortedMap, nEntries, order)
+    const json = JSON.stringify(topRepos, null, 2)
 
     core.info('Processing complete. Sending output.')
 
-    core.setOutput('topRepos', JSON.stringify(topRepos, null, 2))
+    core.setOutput('topRepos', json)
 
     if (generateMarkdown) {
       core.info('Generating markdown...')
@@ -121,7 +126,20 @@ async function run(): Promise<void> {
       core.setOutput('markdown', md)
       core.info('Markdown generated. Saving to file.')
 
-      await writeMarkdown(md, mdFilepath)
+      // If the user disabled saving, or the path came in wrong, skip saving and return.
+      if (mdFilepath === null || mdFilepath === '') {
+        core.info('No markdown filepath provided. Skipping saving of markdown.')
+        return
+      } else {
+        await writeFile(md, mdFilepath)
+      }
+
+      if (jsonFilepath === null || jsonFilepath === '') {
+        core.info('No json filepath provided. Skipping saving of json.')
+        return
+      } else {
+        await writeFile(json, jsonFilepath)
+      }
     }
 
     core.info('Complete. Exiting...')
@@ -133,13 +151,7 @@ async function run(): Promise<void> {
   }
 }
 
-async function writeMarkdown(content: string, path: PathLike): Promise<void> {
-  // If the user disabled saving, or the path came in wrong, skip saving and return.
-  if (path === null || path === '') {
-    core.info('No markdown filepath provided. Skipping saving of markdown.')
-    return
-  }
-
+async function writeFile(content: string, path: PathLike): Promise<void> {
   try {
     const stats = await fs.stat(path)
 

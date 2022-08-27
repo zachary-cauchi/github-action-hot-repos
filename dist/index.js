@@ -57,6 +57,7 @@ function getInputs() {
     const order = (0, types_1.getSortingOrderFromString)(core.getInput('sortOrder'));
     const initialOrder = types_1.SortingOrder.Descending;
     const nEntries = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1, Number.parseInt(core.getInput('entryCount'))));
+    const jsonFilepath = core.getInput('jsonFilepath');
     const mdHeader = core.getInput('mdHeader', { trimWhitespace: false });
     const mdListTemplate = core.getInput('mdListTemplate', {
         trimWhitespace: false
@@ -68,6 +69,7 @@ function getInputs() {
         order,
         initialOrder,
         nEntries,
+        jsonFilepath,
         mdHeader,
         mdListTemplate,
         mdFilepath,
@@ -81,7 +83,7 @@ function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { token, order, initialOrder, nEntries, mdHeader, mdListTemplate, mdFilepath, generateMarkdown } = getInputs();
+            const { token, order, initialOrder, nEntries, jsonFilepath, mdHeader, mdListTemplate, mdFilepath, generateMarkdown } = getInputs();
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
             const mappedCommits = new Map();
@@ -95,8 +97,9 @@ function run() {
             core.info(`Sorted all repos`);
             core.info(`Getting first ${nEntries} repos.`);
             const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap, nEntries, order);
+            const json = JSON.stringify(topRepos, null, 2);
             core.info('Processing complete. Sending output.');
-            core.setOutput('topRepos', JSON.stringify(topRepos, null, 2));
+            core.setOutput('topRepos', json);
             if (generateMarkdown) {
                 core.info('Generating markdown...');
                 const builder = new md_formatter_1.default(mdListTemplate, mdHeader);
@@ -105,7 +108,21 @@ function run() {
                 const md = builder.build(topRepos);
                 core.setOutput('markdown', md);
                 core.info('Markdown generated. Saving to file.');
-                yield writeMarkdown(md, mdFilepath);
+                // If the user disabled saving, or the path came in wrong, skip saving and return.
+                if (mdFilepath === null || mdFilepath === '') {
+                    core.info('No markdown filepath provided. Skipping saving of markdown.');
+                    return;
+                }
+                else {
+                    yield writeFile(md, mdFilepath);
+                }
+                if (jsonFilepath === null || jsonFilepath === '') {
+                    core.info('No json filepath provided. Skipping saving of json.');
+                    return;
+                }
+                else {
+                    yield writeFile(json, jsonFilepath);
+                }
             }
             core.info('Complete. Exiting...');
         }
@@ -117,13 +134,8 @@ function run() {
         }
     });
 }
-function writeMarkdown(content, path) {
+function writeFile(content, path) {
     return __awaiter(this, void 0, void 0, function* () {
-        // If the user disabled saving, or the path came in wrong, skip saving and return.
-        if (path === null || path === '') {
-            core.info('No markdown filepath provided. Skipping saving of markdown.');
-            return;
-        }
         try {
             const stats = yield fs.stat(path);
             if (!stats.isFile()) {
