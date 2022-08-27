@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import {RepoStats} from './types'
 
 /**
@@ -13,15 +14,23 @@ export default class MdBuilder {
    * These strings will be in the format `{{KEY}}` in all uppercase.
    * Example: The key `commitUrl` would replace any occurrence of the string `{{COMMITURL}}`.
    */
-  private static readonly REPLACER_MAP: Map<keyof RepoStats, string> =
-    Object.keys({} as RepoStats).reduce(
-      (map, k) => map.set(k, `{{${k.toUpperCase()}}}`),
-      new Map()
-    )
+  private static readonly REPLACER_MAP: Map<keyof RepoStats, string> = [
+    'repo',
+    'repoUrl',
+    'commitUrl',
+    'commitMsg',
+    'date'
+  ].reduce((map, k) => map.set(k, `{{${k.toUpperCase()}}}`), new Map())
 
   constructor(elementTemplate: string, header = '') {
     this.header = `${header}\n`
     this.elementTemplate = `${elementTemplate}\n`
+
+    core.info('Markdown builder initialised')
+    core.debug('Markdown builder supported keys:')
+    for (const [key, replacer] of MdBuilder.REPLACER_MAP) {
+      core.debug(`${key}: ${replacer}`)
+    }
   }
 
   /**
