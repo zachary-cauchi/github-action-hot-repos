@@ -35,8 +35,15 @@ inputs:
       If you aren't using markdown, this field can be ignored.
     required: false
     default: '* [{{REPO}}]({{REPOURL}}) ([{{COMMITMSG}}]({{COMMITURL}}))'
+  mdFilepath:
+    description: |
+      The path to the file for writing the generated markdown.
+      If you'd like to not save to a file, set this to an empty string ('')
+      If you aren't using markdown, this field can be ignored.
+    required: false
+    default: ''
   generateMarkdown:
-    description: 'Whether to generate a markdown output or not.'
+    description: 'Whether to generate a markdown output or not. Set to false to disable markdown output'
     required: false
     default: true
 

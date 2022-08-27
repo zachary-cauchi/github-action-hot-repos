@@ -43,6 +43,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const fs = __importStar(__nccwpck_require__(3292));
 const md_formatter_1 = __importDefault(__nccwpck_require__(7673));
 const types_1 = __nccwpck_require__(8164);
 const utils_1 = __nccwpck_require__(918);
@@ -60,6 +61,7 @@ function getInputs() {
     const mdListTemplate = core.getInput('mdListTemplate', {
         trimWhitespace: false
     });
+    const mdFilepath = core.getInput('mdFilepath');
     const generateMarkdown = core.getBooleanInput('generateMarkdown');
     return {
         token,
@@ -68,6 +70,7 @@ function getInputs() {
         nEntries,
         mdHeader,
         mdListTemplate,
+        mdFilepath,
         generateMarkdown
     };
 }
@@ -78,7 +81,7 @@ function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { token, order, initialOrder, nEntries, mdHeader, mdListTemplate, generateMarkdown } = getInputs();
+            const { token, order, initialOrder, nEntries, mdHeader, mdListTemplate, mdFilepath, generateMarkdown } = getInputs();
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
             const mappedCommits = new Map();
@@ -101,6 +104,8 @@ function run() {
                 core.debug(`With header ${mdHeader}`);
                 const md = builder.build(topRepos);
                 core.setOutput('markdown', md);
+                core.info('Markdown generated. Saving to file.');
+                yield writeMarkdown(md, mdFilepath);
             }
             core.info('Complete. Exiting...');
         }
@@ -110,6 +115,23 @@ function run() {
                 core.setFailed(error);
             }
         }
+    });
+}
+function writeMarkdown(content, path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // If the user disabled saving, or the path came in wrong, skip saving and return.
+        if (path === null || path === '') {
+            core.info('No markdown filepath provided. Skipping saving of markdown.');
+            return;
+        }
+        const stats = yield fs.stat(path);
+        if (!stats.isFile()) {
+            const err = new Error(`Path ${path} is not a file. Cannot save markdown.`);
+            core.setFailed(err);
+            throw err;
+        }
+        yield fs.writeFile(path, content);
+        core.info(`Wrote file to ${path}.`);
     });
 }
 run();
@@ -196,7 +218,13 @@ exports["default"] = MdBuilder;
  * These strings will be in the format `{{KEY}}` in all uppercase.
  * Example: The key `commitUrl` would replace any occurrence of the string `{{COMMITURL}}`.
  */
-MdBuilder.REPLACER_MAP = ['repo', 'repoUrl', 'commitUrl', 'commitMsg', 'date'].reduce((map, k) => map.set(k, `{{${k.toUpperCase()}}}`), new Map());
+MdBuilder.REPLACER_MAP = [
+    'repo',
+    'repoUrl',
+    'commitUrl',
+    'commitMsg',
+    'date'
+].reduce((map, k) => map.set(k, `{{${k.toUpperCase()}}}`), new Map());
 
 
 /***/ }),
@@ -9954,6 +9982,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 3292:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 

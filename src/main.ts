@@ -1,4 +1,6 @@
 import * as core from '@actions/core'
+import {PathLike} from 'fs'
+import * as fs from 'fs/promises'
 import MdBuilder from './md-formatter'
 import {
   Commit,
@@ -25,6 +27,7 @@ type ActionInputs = {
   nEntries: number
   mdHeader: string
   mdListTemplate: string
+  mdFilepath: string
   generateMarkdown: boolean
 }
 
@@ -46,6 +49,7 @@ function getInputs(): ActionInputs {
   const mdListTemplate = core.getInput('mdListTemplate', {
     trimWhitespace: false
   })
+  const mdFilepath = core.getInput('mdFilepath')
   const generateMarkdown = core.getBooleanInput('generateMarkdown')
 
   return {
@@ -55,6 +59,7 @@ function getInputs(): ActionInputs {
     nEntries,
     mdHeader,
     mdListTemplate,
+    mdFilepath,
     generateMarkdown
   }
 }
@@ -71,6 +76,7 @@ async function run(): Promise<void> {
       nEntries,
       mdHeader,
       mdListTemplate,
+      mdFilepath,
       generateMarkdown
     } = getInputs()
     const client = getClient(token)
@@ -113,6 +119,9 @@ async function run(): Promise<void> {
       const md = builder.build(topRepos)
 
       core.setOutput('markdown', md)
+      core.info('Markdown generated. Saving to file.')
+
+      await writeMarkdown(md, mdFilepath)
     }
 
     core.info('Complete. Exiting...')
@@ -122,6 +131,28 @@ async function run(): Promise<void> {
       core.setFailed(error)
     }
   }
+}
+
+async function writeMarkdown(content: string, path: PathLike): Promise<void> {
+  // If the user disabled saving, or the path came in wrong, skip saving and return.
+  if (path === null || path === '') {
+    core.info('No markdown filepath provided. Skipping saving of markdown.')
+    return
+  }
+
+  const stats = await fs.stat(path)
+
+  if (!stats.isFile()) {
+    const err = new Error(`Path ${path} is not a file. Cannot save markdown.`)
+
+    core.setFailed(err)
+
+    throw err
+  }
+
+  await fs.writeFile(path, content)
+
+  core.info(`Wrote file to ${path}.`)
 }
 
 run()

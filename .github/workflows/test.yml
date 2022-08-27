@@ -34,6 +34,7 @@ jobs:
           sortOrder: desc
           mdHeader: |
             ## Latest contributed repos
+          mdFilepath: hot-repos.md
       
       - name: Check output of topRepos
         run: |
