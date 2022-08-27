@@ -100,7 +100,7 @@ function run() {
                 core.debug(`Generating markdown with template ${mdListTemplate.trim()}`);
                 core.debug(`With header ${mdHeader}`);
                 const md = builder.build(topRepos);
-                core.saveState('markdown', md);
+                core.setOutput('markdown', md);
             }
             core.info('Complete. Exiting...');
         }

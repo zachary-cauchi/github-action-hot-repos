@@ -112,7 +112,7 @@ async function run(): Promise<void> {
 
       const md = builder.build(topRepos)
 
-      core.saveState('markdown', md)
+      core.setOutput('markdown', md)
     }
 
     core.info('Complete. Exiting...')
