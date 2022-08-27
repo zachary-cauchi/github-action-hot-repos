@@ -33,12 +33,10 @@ export default class MdBuilder {
    * @returns A string based on {@link elementTemplate} with the properties {@link input} inserted.
    */
   repoStatsToString(input: RepoStats): string {
-    let output = ''
+    let output = this.elementTemplate.repeat(1)
 
     for (const [key, replacer] of MdBuilder.REPLACER_MAP) {
-      output = output.concat(
-        this.elementTemplate.repeat(1).replace(replacer, input[key].toString())
-      )
+      output = output.replace(replacer, input[key].toString())
     }
 
     return output
