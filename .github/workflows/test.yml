@@ -34,7 +34,6 @@ jobs:
           sortOrder: desc
           mdHeader: |
             ## Latest contributed repos
-
       
       - name: Check output of topRepos
         run: |

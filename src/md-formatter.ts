@@ -20,8 +20,8 @@ export default class MdBuilder {
     )
 
   constructor(elementTemplate: string, header = '') {
-    this.header = header
-    this.elementTemplate = elementTemplate
+    this.header = `${header}\n`
+    this.elementTemplate = `${elementTemplate}\n`
   }
 
   /**

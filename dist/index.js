@@ -129,8 +129,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
  */
 class MdBuilder {
     constructor(elementTemplate, header = '') {
-        this.header = header;
-        this.elementTemplate = elementTemplate;
+        this.header = `${header}\n`;
+        this.elementTemplate = `${elementTemplate}\n`;
     }
     /**
      * Constructs a string using the value of {@link elementTemplate} as a base.

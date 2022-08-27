@@ -34,7 +34,7 @@ inputs:
       When a replacer is found, it is substituted with the value from the `topRepos` entry being processed.
       If you aren't using markdown, this field can be ignored.
     required: false
-    default: '* [{{REPO}}]({{REPOURL}}) ([{{COMMITMSG}}]({{COMMITURL}}))\n'
+    default: '* [{{REPO}}]({{REPOURL}}) ([{{COMMITMSG}}]({{COMMITURL}}))'
   generateMarkdown:
     description: 'Whether to generate a markdown output or not.'
     required: false
