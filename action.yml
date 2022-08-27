@@ -36,7 +36,7 @@ inputs:
     required: false
     default: '* [{{REPO}}]({{REPOURL}}) ([{{COMMITMSG}}]({{COMMITURL}}))\n'
   generateMarkdown:
-    description: 'Whether to generate a markdown output or not'.
+    description: 'Whether to generate a markdown output or not.'
     required: false
     default: true
 
