@@ -53,3 +53,10 @@ jobs:
           
           echo printing complete;
         id: md
+
+      - name: Upload markdown file
+        uses: actions/upload-artifact@v3
+        if: ${{ steps.test.outcome != 'success' }}
+        with:
+          name: hot-repos.md
+          path: hot-repos.md
