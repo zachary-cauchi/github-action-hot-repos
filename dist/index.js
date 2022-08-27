@@ -38,10 +38,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const md_formatter_1 = __importDefault(__nccwpck_require__(7673));
 const types_1 = __nccwpck_require__(8164);
 const utils_1 = __nccwpck_require__(918);
+/**
+ * Gets all the supported inputs of the program.
+ * If any one is undefined or null, it's still returned as null.
+ * @returns The found inputs.
+ */
+function getInputs() {
+    const token = core.getInput('token', { required: true });
+    const order = (0, types_1.getSortingOrderFromString)(core.getInput('sortOrder'));
+    const initialOrder = types_1.SortingOrder.Descending;
+    const nEntries = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1, Number.parseInt(core.getInput('entryCount'))));
+    const mdHeader = core.getInput('mdHeader', { trimWhitespace: false });
+    const mdListTemplate = core.getInput('mdListTemplate', {
+        trimWhitespace: false
+    });
+    const generateMarkdown = core.getBooleanInput('generateMarkdown');
+    return {
+        token,
+        order,
+        initialOrder,
+        nEntries,
+        mdHeader,
+        mdListTemplate,
+        generateMarkdown
+    };
+}
 /**
  * Main entrypoint.
  */
@@ -49,10 +78,7 @@ function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = core.getInput('token', { required: true });
-            const order = (0, types_1.getSortingOrderFromString)(core.getInput('sortOrder'));
-            const initialOrder = types_1.SortingOrder.Descending;
-            const nEntries = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1, Number.parseInt(core.getInput('entryCount'))));
+            const { token, order, initialOrder, nEntries, mdHeader, mdListTemplate, generateMarkdown } = getInputs();
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
             const mappedCommits = new Map();
@@ -68,6 +94,14 @@ function run() {
             const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap, nEntries, order);
             core.info('Processing complete. Sending output.');
             core.setOutput('topRepos', JSON.stringify(topRepos, null, 2));
+            if (generateMarkdown) {
+                core.info('Generating markdown...');
+                const builder = new md_formatter_1.default(mdListTemplate, mdHeader);
+                core.debug(`Generating markdown with template ${mdListTemplate.trim()}`);
+                core.debug(`With header ${mdHeader}`);
+                const md = builder.build(topRepos);
+                core.saveState('markdown', md);
+            }
             core.info('Complete. Exiting...');
         }
         catch (error) {
@@ -79,6 +113,61 @@ function run() {
     });
 }
 run();
+
+
+/***/ }),
+
+/***/ 7673:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+/**
+ * A builder class for converting an array of {@link RepoStats} into a markdown string.
+ *
+ */
+class MdBuilder {
+    constructor(elementTemplate, header = '') {
+        this.header = header;
+        this.elementTemplate = elementTemplate;
+    }
+    /**
+     * Constructs a string using the value of {@link elementTemplate} as a base.
+     * Each replacable string in {@link REPLACER_MAP} is searched for in the base string.
+     * If any replacable string is found in the map,
+     * replace it with the corresponding value in the {@link input}.
+     * @param input The repo stats to use when populating the template.
+     * @returns A string based on {@link elementTemplate} with the properties {@link input} inserted.
+     */
+    repoStatsToString(input) {
+        const output = this.elementTemplate.repeat(1);
+        for (const [key, replacer] of MdBuilder.REPLACER_MAP) {
+            output.replace(replacer, input[key].toString());
+        }
+        return output;
+    }
+    /**
+     * Generates a string using the given {@link input} array.
+     * The string is constructed using the {@link header} first
+     * and followed by a substring for each element in {@link input}.
+     * @param input The input array of {@link RepoStats}.
+     * @returns The final generated string.
+     */
+    build(input) {
+        return input
+            .map(i => this.repoStatsToString(i))
+            .reduce((md, s) => md.concat(s), this.header)
+            .trim();
+    }
+}
+exports["default"] = MdBuilder;
+/**
+ * A mapping between the keys in {@link RepoStats} and the strings to look out for.
+ * These strings will be in the format `{{KEY}}` in all uppercase.
+ * Example: The key `commitUrl` would replace any occurrence of the string `{{COMMITURL}}`.
+ */
+MdBuilder.REPLACER_MAP = Object.keys({}).reduce((map, k) => map.set(k, `{{${k.toUpperCase()}}}`), new Map());
 
 
 /***/ }),

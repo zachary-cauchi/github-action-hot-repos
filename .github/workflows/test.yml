@@ -32,12 +32,24 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           entryCount: 6
           sortOrder: desc
+          mdHeader: |
+            ## Latest contributed repos
+            
       
-      - name: Check output of actions
+      - name: Check output of topRepos
         run: |
           echo Printing action output;
           cat <<-;
           ${{ steps.test.outputs.topRepos }}
           
           echo printing complete;
-        id: post
+        id: json
+      
+      - name: Check output of markdown
+        run: |
+          echo Printing action output;
+          cat <<-;
+          ${{ steps.test.outputs.markdown }}
+          
+          echo printing complete;
+        id: md

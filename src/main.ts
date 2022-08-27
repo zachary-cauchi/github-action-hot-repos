@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import MdBuilder from './md-formatter'
 import {
   Commit,
   getSortingOrderFromString,
@@ -15,18 +16,63 @@ import {
 } from './utils'
 
 /**
+ * All the expected inputs of the action.
+ */
+type ActionInputs = {
+  token: string
+  order: SortingOrder
+  initialOrder: SortingOrder
+  nEntries: number
+  mdHeader: string
+  mdListTemplate: string
+  generateMarkdown: boolean
+}
+
+/**
+ * Gets all the supported inputs of the program.
+ * If any one is undefined or null, it's still returned as null.
+ * @returns The found inputs.
+ */
+function getInputs(): ActionInputs {
+  const token = core.getInput('token', {required: true})
+  const order = getSortingOrderFromString(core.getInput('sortOrder'))
+  const initialOrder = SortingOrder.Descending
+  const nEntries = Math.min(
+    Number.MAX_SAFE_INTEGER,
+    Math.max(1, Number.parseInt(core.getInput('entryCount')))
+  )
+
+  const mdHeader = core.getInput('mdHeader', {trimWhitespace: false})
+  const mdListTemplate = core.getInput('mdListTemplate', {
+    trimWhitespace: false
+  })
+  const generateMarkdown = core.getBooleanInput('generateMarkdown')
+
+  return {
+    token,
+    order,
+    initialOrder,
+    nEntries,
+    mdHeader,
+    mdListTemplate,
+    generateMarkdown
+  }
+}
+
+/**
  * Main entrypoint.
  */
 async function run(): Promise<void> {
   try {
-    const token = core.getInput('token', {required: true})
-    const order = getSortingOrderFromString(core.getInput('sortOrder'))
-    const initialOrder = SortingOrder.Descending
-    const nEntries = Math.min(
-      Number.MAX_SAFE_INTEGER,
-      Math.max(1, Number.parseInt(core.getInput('entryCount')))
-    )
-
+    const {
+      token,
+      order,
+      initialOrder,
+      nEntries,
+      mdHeader,
+      mdListTemplate,
+      generateMarkdown
+    } = getInputs()
     const client = getClient(token)
 
     const repos = await getUserPublicRepos(client)
@@ -55,6 +101,19 @@ async function run(): Promise<void> {
     core.info('Processing complete. Sending output.')
 
     core.setOutput('topRepos', JSON.stringify(topRepos, null, 2))
+
+    if (generateMarkdown) {
+      core.info('Generating markdown...')
+
+      const builder = new MdBuilder(mdListTemplate, mdHeader)
+
+      core.debug(`Generating markdown with template ${mdListTemplate.trim()}`)
+      core.debug(`With header ${mdHeader}`)
+
+      const md = builder.build(topRepos)
+
+      core.saveState('markdown', md)
+    }
 
     core.info('Complete. Exiting...')
   } catch (error) {

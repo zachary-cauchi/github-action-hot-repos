@@ -21,10 +21,32 @@ inputs:
       descending | desc
     required: false
     default: desc
+  mdHeader:
+    description: |
+      A header for the generated markdown file.
+      If you aren't using markdown, this field can be ignored.
+    required: false
+    default: ''
+  mdListTemplate:
+    description: |
+      A template list entry for each element in the list.
+      Each field in the `topRepos` output is assigned a replacer which will be searched for in the template.
+      When a replacer is found, it is substituted with the value from the `topRepos` entry being processed.
+      If you aren't using markdown, this field can be ignored.
+    required: false
+    default: '* [{{REPO}}]({{REPOURL}}) ([{{COMMITMSG}}]({{COMMITURL}}))\n'
+  generateMarkdown:
+    description: 'Whether to generate a markdown output or not'.
+    required: false
+    default: true
 
 outputs:
   topRepos:
     description: 'The top repos reported by the action. Repos are sorted in descending order based on the date of the last commit.'
+  markdown:
+    description: |
+      The generated markdown for the obtained repos.
+      This is only set if `generateMarkdown` is true.
 runs:
   using: 'node16'
   main: 'dist/index.js'
