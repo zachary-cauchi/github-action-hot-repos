@@ -98,6 +98,12 @@ function run() {
             core.info(`Getting first ${nEntries} repos.`);
             const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap, nEntries, order);
             const json = JSON.stringify(topRepos, null, 2);
+            if (jsonFilepath === null || jsonFilepath === '') {
+                core.info('No json filepath provided. Skipping saving of json.');
+            }
+            else {
+                yield writeFile(json, jsonFilepath);
+            }
             core.info('Processing complete. Sending output.');
             core.setOutput('topRepos', json);
             if (generateMarkdown) {
@@ -107,21 +113,13 @@ function run() {
                 core.debug(`With header ${mdHeader}`);
                 const md = builder.build(topRepos);
                 core.setOutput('markdown', md);
-                core.info('Markdown generated. Saving to file.');
+                core.info('Markdown generated.');
                 // If the user disabled saving, or the path came in wrong, skip saving and return.
                 if (mdFilepath === null || mdFilepath === '') {
                     core.info('No markdown filepath provided. Skipping saving of markdown.');
-                    return;
                 }
                 else {
                     yield writeFile(md, mdFilepath);
-                }
-                if (jsonFilepath === null || jsonFilepath === '') {
-                    core.info('No json filepath provided. Skipping saving of json.');
-                    return;
-                }
-                else {
-                    yield writeFile(json, jsonFilepath);
                 }
             }
             core.info('Complete. Exiting...');

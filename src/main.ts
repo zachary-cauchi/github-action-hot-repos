@@ -109,6 +109,12 @@ async function run(): Promise<void> {
     const topRepos = repoMapToRepoStatsMap(sortedMap, nEntries, order)
     const json = JSON.stringify(topRepos, null, 2)
 
+    if (jsonFilepath === null || jsonFilepath === '') {
+      core.info('No json filepath provided. Skipping saving of json.')
+    } else {
+      await writeFile(json, jsonFilepath)
+    }
+
     core.info('Processing complete. Sending output.')
 
     core.setOutput('topRepos', json)
@@ -124,21 +130,13 @@ async function run(): Promise<void> {
       const md = builder.build(topRepos)
 
       core.setOutput('markdown', md)
-      core.info('Markdown generated. Saving to file.')
+      core.info('Markdown generated.')
 
       // If the user disabled saving, or the path came in wrong, skip saving and return.
       if (mdFilepath === null || mdFilepath === '') {
         core.info('No markdown filepath provided. Skipping saving of markdown.')
-        return
       } else {
         await writeFile(md, mdFilepath)
-      }
-
-      if (jsonFilepath === null || jsonFilepath === '') {
-        core.info('No json filepath provided. Skipping saving of json.')
-        return
-      } else {
-        await writeFile(json, jsonFilepath)
       }
     }
 
