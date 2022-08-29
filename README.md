@@ -7,28 +7,58 @@
 Get your most recently committed repos! This action will perform the following:
 * Get all your public repos.
 * Sort them by the last commit made to them.
-* Output the top 5 repos along with the last commit date and last commit message.
+* Output the top repos along with the last commit date and last commit message.
 
 ## Inputs:
 
 ### token
 
 Set this to a Personal Access Token or `${{ secrets.GITHUB_TOKEN }}` scoped to your user.
-The token provided needs to have support for 
+The token provided needs to have permission `contents: 'read'` at minimum.
 
 ## entryCount
 
 How many repo entries to return. At least one must be returned.
-Default: 5
+Default: `5`
 
-### sortOrder:
+### sortOrder
 
 Decides in what order the repos should be returned as, whether in ascending or descending order.
 Accepted values:
 * Ascending: 'ascending' or 'asc'
 * Descending: 'descending' or 'desc'
 
-Default: ascending
+Default: `ascending`
+
+### jsonFilepath
+
+The path to the file for writing the `topRepos` output. If ignored or left empty, no file will be written.
+
+### mdHeader
+
+A header with which to prepend to a generated markdown list of your repos. By default, this is empty. If markdown is disabled, this will be ignored.
+
+### mdListTemplate
+
+Determines how a repo entry will be formatted in markdown. The template can have a number of substrings which the program expects to find and will replace with its associated value. The following substrings are supported:
+* `{{REPO}}`: The name of the repo.
+* `{{REPOURL}}`: The url to the repo.
+* `{{COMMITMSG}}`: The message or first line of the latest commit.
+* `{{COMMITURL}}`: The url to the latest commit.
+* `{{DATE}}`: The date of the latest commit.
+If markdown is disabled, this field will be ignored.
+
+Default: `* [{{REPO}}]({{REPOURL}}) ([{{COMMITMSG}}]({{COMMITURL}}))`
+
+### mdFilepath
+
+The path to the file for writing the generated markdown. If ignored or left empty, no file will be written. If markdown is disabled, this field will be ignored.
+
+### generateMarkdown
+
+Whether to generate markdown or not. Enabled by default.
+
+Default: `true`
 
 ## Output:
 
@@ -44,6 +74,10 @@ A JSON array of all the repos returned in the following format:
   "date": "date", // ISO 8601 date string of the last commit.
 }
 ```
+
+### markdown
+
+The markdown generated for the found list of repos and commits. This is only set if markdown is enabled.
 
 ## Examples:
 
@@ -88,4 +122,63 @@ A JSON array of all the repos returned in the following format:
     
     echo printing complete;
   id: post
+```
+
+### Save the repos to a json file
+
+```yml
+- uses: zachary-cauchi/github-action-hot-repos@v1
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+    jsonFilepath: hot-repos.json
+```
+
+### Printing the generated markdown to the console
+
+```yml
+- uses: ./
+  id: test
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+
+- name: Check output of actions
+  run: |
+    echo Printing top repos;
+    cat <<-;
+    ${{ steps.test.outputs.markdown }}
+    
+    echo printing complete;
+  id: post
+```
+
+### Save the repos to a markdown file with a header
+
+```yml
+- uses: zachary-cauchi/github-action-hot-repos@v1
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+    mdHeader: '## Latest repo commits'
+    mdFilepath: hot-repos.md
+
+```
+
+### Save the repos to a markdown file with a header and different list template
+
+```yml
+- uses: zachary-cauchi/github-action-hot-repos@v1
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+    mdHeader: '## Latest repo commits'
+    mdFilepath: hot-repos.md
+    mdListTemplate: '* [{{REPO}}]({{REPOURL}}) Last modified: {{DATE}}'
+```
+
+### Save the repos to a json file and disable markdown
+
+```yml
+- uses: zachary-cauchi/github-action-hot-repos@v1
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+    jsonFilepath: hot-repos.json
+    generateMarkdown: false
 ```

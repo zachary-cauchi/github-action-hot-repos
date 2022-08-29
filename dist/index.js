@@ -38,10 +38,44 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const fs = __importStar(__nccwpck_require__(3292));
+const md_formatter_1 = __importDefault(__nccwpck_require__(7673));
 const types_1 = __nccwpck_require__(8164);
 const utils_1 = __nccwpck_require__(918);
+/**
+ * Gets all the supported inputs of the program.
+ * If any one is undefined or null, it's still returned as null.
+ * @returns The found inputs.
+ */
+function getInputs() {
+    const token = core.getInput('token', { required: true });
+    const order = (0, types_1.getSortingOrderFromString)(core.getInput('sortOrder'));
+    const initialOrder = types_1.SortingOrder.Descending;
+    const nEntries = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1, Number.parseInt(core.getInput('entryCount'))));
+    const jsonFilepath = core.getInput('jsonFilepath');
+    const mdHeader = core.getInput('mdHeader', { trimWhitespace: false });
+    const mdListTemplate = core.getInput('mdListTemplate', {
+        trimWhitespace: false
+    });
+    const mdFilepath = core.getInput('mdFilepath');
+    const generateMarkdown = core.getBooleanInput('generateMarkdown');
+    return {
+        token,
+        order,
+        initialOrder,
+        nEntries,
+        jsonFilepath,
+        mdHeader,
+        mdListTemplate,
+        mdFilepath,
+        generateMarkdown
+    };
+}
 /**
  * Main entrypoint.
  */
@@ -49,10 +83,7 @@ function run() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = core.getInput('token', { required: true });
-            const order = (0, types_1.getSortingOrderFromString)(core.getInput('sortOrder'));
-            const initialOrder = types_1.SortingOrder.Descending;
-            const nEntries = Math.min(Number.MAX_SAFE_INTEGER, Math.max(1, Number.parseInt(core.getInput('entryCount'))));
+            const { token, order, initialOrder, nEntries, jsonFilepath, mdHeader, mdListTemplate, mdFilepath, generateMarkdown } = getInputs();
             const client = (0, utils_1.getClient)(token);
             const repos = yield (0, utils_1.getUserPublicRepos)(client);
             const mappedCommits = new Map();
@@ -66,8 +97,33 @@ function run() {
             core.info(`Sorted all repos`);
             core.info(`Getting first ${nEntries} repos.`);
             const topRepos = (0, utils_1.repoMapToRepoStatsMap)(sortedMap, nEntries, order);
+            const json = JSON.stringify(topRepos, null, 2);
             core.info('Processing complete. Sending output.');
-            core.setOutput('topRepos', JSON.stringify(topRepos, null, 2));
+            core.setOutput('topRepos', json);
+            if (generateMarkdown) {
+                core.info('Generating markdown...');
+                const builder = new md_formatter_1.default(mdListTemplate, mdHeader);
+                core.debug(`Generating markdown with template ${mdListTemplate.trim()}`);
+                core.debug(`With header ${mdHeader}`);
+                const md = builder.build(topRepos);
+                core.setOutput('markdown', md);
+                core.info('Markdown generated. Saving to file.');
+                // If the user disabled saving, or the path came in wrong, skip saving and return.
+                if (mdFilepath === null || mdFilepath === '') {
+                    core.info('No markdown filepath provided. Skipping saving of markdown.');
+                    return;
+                }
+                else {
+                    yield writeFile(md, mdFilepath);
+                }
+                if (jsonFilepath === null || jsonFilepath === '') {
+                    core.info('No json filepath provided. Skipping saving of json.');
+                    return;
+                }
+                else {
+                    yield writeFile(json, jsonFilepath);
+                }
+            }
             core.info('Complete. Exiting...');
         }
         catch (error) {
@@ -78,7 +134,114 @@ function run() {
         }
     });
 }
+function writeFile(content, path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const stats = yield fs.stat(path);
+            if (!stats.isFile()) {
+                const err = new Error(`Path ${path} is not a file. Cannot save markdown.`);
+                core.setFailed(err);
+                throw err;
+            }
+        }
+        catch (e) {
+            core.debug(`File ${path} does not exist. Creating file`);
+        }
+        yield fs.writeFile(path, content);
+        core.info(`Wrote file to ${path}.`);
+    });
+}
 run();
+
+
+/***/ }),
+
+/***/ 7673:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+/**
+ * A builder class for converting an array of {@link RepoStats} into a markdown string.
+ *
+ */
+class MdBuilder {
+    constructor(elementTemplate, header = '') {
+        this.header = `${header}\n`;
+        this.elementTemplate = `${elementTemplate}\n`;
+        core.info('Markdown builder initialised');
+        core.debug('Markdown builder supported keys:');
+        for (const [key, replacer] of MdBuilder.REPLACER_MAP) {
+            core.debug(`${key}: ${replacer}`);
+        }
+    }
+    /**
+     * Constructs a string using the value of {@link elementTemplate} as a base.
+     * Each replacable string in {@link REPLACER_MAP} is searched for in the base string.
+     * If any replacable string is found in the map,
+     * replace it with the corresponding value in the {@link input}.
+     * @param input The repo stats to use when populating the template.
+     * @returns A string based on {@link elementTemplate} with the properties {@link input} inserted.
+     */
+    repoStatsToString(input) {
+        let output = this.elementTemplate.repeat(1);
+        for (const [key, replacer] of MdBuilder.REPLACER_MAP) {
+            output = output.replace(replacer, input[key].toString());
+        }
+        return output;
+    }
+    /**
+     * Generates a string using the given {@link input} array.
+     * The string is constructed using the {@link header} first
+     * and followed by a substring for each element in {@link input}.
+     * @param input The input array of {@link RepoStats}.
+     * @returns The final generated string.
+     */
+    build(input) {
+        return input
+            .map(i => this.repoStatsToString(i))
+            .reduce((md, s) => md.concat(s), this.header)
+            .trim();
+    }
+}
+exports["default"] = MdBuilder;
+/**
+ * A mapping between the keys in {@link RepoStats} and the strings to look out for.
+ * These strings will be in the format `{{KEY}}` in all uppercase.
+ * Example: The key `commitUrl` would replace any occurrence of the string `{{COMMITURL}}`.
+ */
+MdBuilder.REPLACER_MAP = [
+    'repo',
+    'repoUrl',
+    'commitUrl',
+    'commitMsg',
+    'date'
+].reduce((map, k) => map.set(k, `{{${k.toUpperCase()}}}`), new Map());
 
 
 /***/ }),
@@ -9836,6 +9999,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 3292:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 
