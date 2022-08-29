@@ -83,14 +83,14 @@ The markdown generated for the found list of repos and commits. This is only set
 
 ### Basic setup
 ```yml
-- uses: zachary-cauchi/github-action-hot-repos@v1
+- uses: zachary-cauchi/github-action-hot-repos@v2
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ### Get the top 6 repos
 ```yml
-- uses: zachary-cauchi/github-action-hot-repos@v1
+- uses: zachary-cauchi/github-action-hot-repos@v2
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
     entryCount: 6
@@ -98,7 +98,7 @@ The markdown generated for the found list of repos and commits. This is only set
 
 ### Get the top 6 repos in ascending order
 ```yml
-- uses: zachary-cauchi/github-action-hot-repos@v1
+- uses: zachary-cauchi/github-action-hot-repos@v2
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
     entryCount: 6
@@ -127,7 +127,7 @@ The markdown generated for the found list of repos and commits. This is only set
 ### Save the repos to a json file
 
 ```yml
-- uses: zachary-cauchi/github-action-hot-repos@v1
+- uses: zachary-cauchi/github-action-hot-repos@v2
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
     jsonFilepath: hot-repos.json
@@ -154,7 +154,7 @@ The markdown generated for the found list of repos and commits. This is only set
 ### Save the repos to a markdown file with a header
 
 ```yml
-- uses: zachary-cauchi/github-action-hot-repos@v1
+- uses: zachary-cauchi/github-action-hot-repos@v2
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
     mdHeader: '## Latest repo commits'
@@ -165,7 +165,7 @@ The markdown generated for the found list of repos and commits. This is only set
 ### Save the repos to a markdown file with a header and different list template
 
 ```yml
-- uses: zachary-cauchi/github-action-hot-repos@v1
+- uses: zachary-cauchi/github-action-hot-repos@v2
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
     mdHeader: '## Latest repo commits'
@@ -176,7 +176,7 @@ The markdown generated for the found list of repos and commits. This is only set
 ### Save the repos to a json file and disable markdown
 
 ```yml
-- uses: zachary-cauchi/github-action-hot-repos@v1
+- uses: zachary-cauchi/github-action-hot-repos@v2
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
     jsonFilepath: hot-repos.json
