@@ -55,7 +55,7 @@ jobs:
           echo printing complete;
         id: md
 
-      - name: Upload markdown file
+      - name: Upload output files
         uses: actions/upload-artifact@v3
         with:
           name: hot-repos
