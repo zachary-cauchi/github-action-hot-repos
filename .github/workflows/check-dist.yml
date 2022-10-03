@@ -16,6 +16,9 @@ on:
       - '**.md'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   check-dist:
     runs-on: ubuntu-latest
@@ -54,6 +57,7 @@ jobs:
           add: dist
           default_author: github_actions
           message: 'feat: update dist package'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v3
         if: ${{ steps.commit.outputs.committed == 'true' }}
