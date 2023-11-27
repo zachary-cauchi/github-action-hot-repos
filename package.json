@@ -27,7 +27,7 @@
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/github": "^6.0.0",
-    "eslint": "^8.53.0",
+    "eslint": "^8.54.0",
     "eslint-plugin-github": "^4.10.1",
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-prettier": "^5.0.1"
