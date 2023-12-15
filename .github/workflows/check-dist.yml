@@ -59,7 +59,7 @@ jobs:
           message: 'feat: update dist package'
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ steps.commit.outputs.committed == 'true' }}
         with:
           name: dist
