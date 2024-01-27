@@ -1,13 +1,13 @@
 import * as core from '@actions/core'
-import {context, getOctokit} from '@actions/github'
+import { context, getOctokit } from '@actions/github'
 import {
   Commit,
-  getOppositeOrder,
   GitHubClient,
   Repo,
   RepoCommitMap,
   RepoStats,
-  SortingOrder
+  SortingOrder,
+  getOppositeOrder
 } from './types'
 
 /**
@@ -34,7 +34,7 @@ export async function getUserPublicRepos(
 
   core.info(`Getting repos for user ${username}.`)
 
-  const repos = (await client.rest.repos.listForUser({username})).data
+  const repos = (await client.rest.repos.listForUser({ username, sort: 'updated', per_page: 100 })).data
 
   core.debug(`Got ${repos.length} repos.`)
 
