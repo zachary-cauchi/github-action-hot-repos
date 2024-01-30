@@ -354,7 +354,7 @@ function getUserPublicRepos(client) {
         core.debug('Getting user.');
         const username = github_1.context.repo.owner;
         core.info(`Getting repos for user ${username}.`);
-        const repos = (yield client.rest.repos.listForUser({ username })).data;
+        const repos = (yield client.rest.repos.listForUser({ username, sort: 'updated', per_page: 100 })).data;
         core.debug(`Got ${repos.length} repos.`);
         return repos;
     });
